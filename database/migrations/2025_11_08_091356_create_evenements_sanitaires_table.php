@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('lot_id')->nullable()->constrained('lots')->cascadeOnDelete();
             $table->datetime('date_evenement');
             $table->enum('type_evenement', ['vaccination', 'traitement', 'castration', 'caudectomie', 'autre']);
-            $table->foreignId('produit_sanitaire_id')->nullable()->constrained('produits_sanitaires')->nullOnDelete();
+            $table->foreignId('produit_sanitaire_id')->nullable()->constrained('produit_sanitaires')->nullOnDelete();
             $table->decimal('dose_administree', 8, 3)->nullable();
             $table->integer('nb_animaux_traites')->nullable();
             $table->string('intervenant', 100)->nullable();

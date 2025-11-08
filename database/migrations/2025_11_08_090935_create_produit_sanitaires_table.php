@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('produits_sanitaires', function (Blueprint $table) {
+        Schema::create('produit_sanitaires', function (Blueprint $table) {
             $table->id();
             $table->string('nom', 150);
             $table->enum('type', ['vaccin', 'antibiotique', 'antiparasitaire', 'autre']);

@@ -17,8 +17,8 @@ return new class extends Migration
             $table->enum('type_animal', ['truie', 'cochette', 'verrat']);
             $table->foreignId('race_id')->constrained('races')->cascadeOnDelete();
             $table->enum('sexe', ['F', 'M']);
-            $table->date('date_naissance');
-            $table->date('date_entree');
+            $table->date('date_naissance')->nullable();
+            $table->date('date_entree')->nullable();
             $table->enum('origine', ['naissance_elevage', 'achat_externe']);
             $table->string('numero_mere', 50)->nullable();
             $table->string('numero_pere', 50)->nullable();
