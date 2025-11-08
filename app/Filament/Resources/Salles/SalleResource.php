@@ -20,8 +20,9 @@ class SalleResource extends Resource
 {
     protected static ?string $model = Salle::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+//    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static string|null|\UnitEnum $navigationGroup = "Parametres";
     public static function form(Schema $schema): Schema
     {
         return SalleForm::configure($schema);

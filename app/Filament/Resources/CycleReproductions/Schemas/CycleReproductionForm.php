@@ -4,6 +4,7 @@ namespace App\Filament\Resources\CycleReproductions\Schemas;
 
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -72,12 +73,6 @@ class CycleReproductionForm
                                     ->tooltip('Statut actuel du cycle de reproduction')
                                     ->color('gray'),
                             ])),
-                    ])
-                    ->columns(2),
-
-                Section::make('Chaleurs et saillie')
-                    ->description('Informations sur les chaleurs et l\'insémination/saillie')
-                    ->schema([
                         DateTimePicker::make('date_chaleurs')
                             ->label('Date des chaleurs')
                             ->native(false)
@@ -87,40 +82,116 @@ class CycleReproductionForm
                                     ->tooltip('Date et heure d\'observation des chaleurs de l\'animal')
                                     ->color('gray'),
                             ])),
-
-                        DateTimePicker::make('date_premiere_saillie')
-                            ->label('Date de première saillie')
-                            ->native(false)
-                            ->seconds(false)
-                            ->live()
-                            ->afterStateUpdated(function ($state, $set) {
-                                // Calculer automatiquement la date de mise-bas prévue (114 jours après la saillie)
-                                if ($state) {
-                                    $dateSaillie = \Carbon\Carbon::parse($state);
-                                    $dateMiseBasPrevue = $dateSaillie->addDays(114);
-                                    $set('date_mise_bas_prevue', $dateMiseBasPrevue->format('Y-m-d'));
-                                }
-                            })
-                            ->afterLabel(Schema::start([
-                                Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Date et heure de la première insémination ou saillie')
-                                    ->color('gray'),
-                            ])),
-
-                        Select::make('type_saillie')
-                            ->label('Type de saillie')
-                            ->options([
-                                'IA' => 'Insémination Artificielle (IA)',
-                                'MN' => 'Monte Naturelle (MN)',
-                            ])
-                            ->native(false)
-                            ->afterLabel(Schema::start([
-                                Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('IA = Insémination Artificielle, MN = Monte Naturelle (accouplement naturel avec un verrat)')
-                                    ->color('gray'),
-                            ])),
                     ])
                     ->columns(3),
+
+
+                Section::make('Saillies / Inséminations')
+                    ->description('Enregistrement des multiples inséminations ou saillies (recommandé : 2-3 inséminations à 12-24h d\'intervalle)')
+                    ->schema([
+                        Repeater::make('saillies')
+                            ->label('Liste des saillies')
+                            ->relationship()
+                            ->schema([
+                                Select::make('type')
+                                    ->label('Type')
+                                    ->required()
+                                    ->options([
+                                        'IA' => 'Insémination Artificielle',
+                                        'MN' => 'Monte Naturelle',
+                                    ])
+                                    ->default('IA')
+                                    ->native(false)
+                                    ->live()
+                                    ->afterLabel(Schema::start([
+                                        Icon::make(Heroicon::QuestionMarkCircle)
+                                            ->tooltip('IA = Insémination Artificielle, MN = Monte Naturelle (avec verrat)')
+                                            ->color('gray'),
+                                    ])),
+
+                                DateTimePicker::make('date_heure')
+                                    ->label('Date et heure')
+                                    ->required()
+                                    ->native(false)
+                                    ->seconds(false)
+                                    ->default(now())
+                                    ->live()
+                                    ->afterStateUpdated(function ($state, $set, $get) {
+                                        // Calculer la date de mise-bas prévue basée sur la PREMIÈRE saillie
+                                        $saillies = $get('../../saillies') ?? [];
+                                        if (! empty($saillies)) {
+                                            // Trouver la date de saillie la plus ancienne
+                                            $dates = array_filter(array_column($saillies, 'date_heure'));
+                                            if (! empty($dates)) {
+                                                $premiereDate = min($dates);
+                                                $dateSaillie = \Carbon\Carbon::parse($premiereDate);
+                                                $dateMiseBasPrevue = $dateSaillie->copy()->addDays(114);
+                                                $set('../../date_mise_bas_prevue', $dateMiseBasPrevue->format('Y-m-d'));
+                                            }
+                                        }
+                                    })
+                                    ->afterLabel(Schema::start([
+                                        Icon::make(Heroicon::QuestionMarkCircle)
+                                            ->tooltip('Date et heure de cette insémination ou saillie')
+                                            ->color('gray'),
+                                    ])),
+
+                                Select::make('verrat_id')
+                                    ->label('Verrat')
+                                    ->options(function () {
+                                        return \App\Models\Animal::where('type_animal', 'verrat')
+                                            ->pluck('numero_identification', 'id');
+                                    })
+                                    ->searchable()
+                                    ->preload()
+                                    ->visible(fn ($get) => $get('type') === 'MN')
+                                    ->afterLabel(Schema::start([
+                                        Icon::make(Heroicon::QuestionMarkCircle)
+                                            ->tooltip('Verrat utilisé pour la monte naturelle (seulement pour MN)')
+                                            ->color('gray'),
+                                    ])),
+
+                                TextInput::make('semence_lot_numero')
+                                    ->label('N° lot de semence')
+                                    ->maxLength(100)
+                                    ->visible(fn ($get) => $get('type') === 'IA')
+                                    ->afterLabel(Schema::start([
+                                        Icon::make(Heroicon::QuestionMarkCircle)
+                                            ->tooltip('Numéro du lot de semence utilisé pour l\'IA')
+                                            ->color('gray'),
+                                    ])),
+
+                                TextInput::make('intervenant')
+                                    ->label('Intervenant')
+                                    ->maxLength(100)
+                                    ->afterLabel(Schema::start([
+                                        Icon::make(Heroicon::QuestionMarkCircle)
+                                            ->tooltip('Nom de la personne ayant effectué l\'insémination ou la saillie')
+                                            ->color('gray'),
+                                    ])),
+
+                                Textarea::make('notes')
+                                    ->label('Notes')
+                                    ->rows(2)
+                                    ->columnSpanFull()
+                                    ->afterLabel(Schema::start([
+                                        Icon::make(Heroicon::QuestionMarkCircle)
+                                            ->tooltip('Observations particulières sur cette saillie')
+                                            ->color('gray'),
+                                    ])),
+                            ])
+                            ->columns(2)
+                            ->itemLabel(fn (array $state): ?string => isset($state['date_heure']) ? \Carbon\Carbon::parse($state['date_heure'])->format('d/m/Y H:i').' - '.($state['type'] ?? '') : null)
+                            ->addActionLabel('Ajouter une saillie / insémination')
+                            ->reorderable(false)
+                            ->collapsible()
+                            ->defaultItems(0)
+                            ->afterLabel(Schema::start([
+                                Icon::make(Heroicon::QuestionMarkCircle)
+                                    ->tooltip('Ajoutez plusieurs saillies/inséminations pour maximiser les chances de réussite (généralement 2-3 à 12-24h d\'intervalle)')
+                                    ->color('gray'),
+                            ])),
+                    ]),
 
                 Section::make('Diagnostic de gestation')
                     ->description('Résultats du diagnostic de gestation')

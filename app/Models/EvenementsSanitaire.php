@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class EvenementSanitaire extends Model
+class EvenementsSanitaire extends Model
 {
     protected $fillable = [
         'type_cible',

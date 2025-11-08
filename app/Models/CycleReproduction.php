@@ -73,10 +73,24 @@ class CycleReproduction extends Model
 
     public function jourDeGestation(): ?int
     {
-        if (! $this->date_premiere_saillie) {
+        $premiereSaillie = $this->saillies()->orderBy('date_heure')->first();
+
+        if (! $premiereSaillie) {
             return null;
         }
 
-        return $this->date_premiere_saillie->diffInDays(now());
+        return $premiereSaillie->date_heure->diffInDays(now());
+    }
+
+    public function datePremiereSaillie(): ?\Carbon\Carbon
+    {
+        $premiereSaillie = $this->saillies()->orderBy('date_heure')->first();
+
+        return $premiereSaillie?->date_heure;
+    }
+
+    public function nombreSaillies(): int
+    {
+        return $this->saillies()->count();
     }
 }

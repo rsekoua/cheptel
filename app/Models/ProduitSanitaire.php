@@ -30,7 +30,7 @@ class ProduitSanitaire extends Model
 
     public function evenementsSanitaires(): HasMany
     {
-        return $this->hasMany(EvenementSanitaire::class);
+        return $this->hasMany(EvenementsSanitaire::class);
     }
 
     public function scopeEnRupture(Builder $query): void

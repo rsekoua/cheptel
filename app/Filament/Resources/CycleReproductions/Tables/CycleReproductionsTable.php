@@ -65,21 +65,25 @@ class CycleReproductionsTable
                         default => $state,
                     }),
 
-                TextColumn::make('type_saillie')
-                    ->label('Type saillie')
+                TextColumn::make('saillies_count')
+                    ->label('Nb saillies')
+                    ->counts('saillies')
                     ->badge()
-                    ->color('primary')
-                    ->formatStateUsing(fn (?string $state): string => match ($state) {
-                        'IA' => 'IA',
-                        'MN' => 'MN',
-                        default => '-',
-                    })
-                    ->toggleable(),
+                    ->color('info')
+                    ->alignCenter()
+                    ->sortable(),
 
-                TextColumn::make('date_premiere_saillie')
-                    ->label('Date saillie')
-                    ->date('d/m/Y')
-                    ->sortable()
+                TextColumn::make('saillies')
+                    ->label('Première saillie')
+                    ->formatStateUsing(function ($record) {
+                        $premiereSaillie = $record->saillies()->orderBy('date_heure')->first();
+                        if (! $premiereSaillie) {
+                            return '-';
+                        }
+
+                        return $premiereSaillie->date_heure->format('d/m/Y H:i').' ('.$premiereSaillie->type.')';
+                    })
+                    ->placeholder('-')
                     ->toggleable(),
 
                 TextColumn::make('date_diagnostic')

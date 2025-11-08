@@ -40,7 +40,7 @@ class PlanAlimentation extends Model
 
     public function evenementsAlimentation(): HasMany
     {
-        return $this->hasMany(EvenementAlimentation::class);
+        return $this->hasMany(EvenementsAlimentation::class);
     }
 
     public function scopeReproducteurs(Builder $query): void

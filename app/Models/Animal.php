@@ -79,12 +79,12 @@ class Animal extends Model
 
     public function evenementsSanitaires(): HasMany
     {
-        return $this->hasMany(EvenementSanitaire::class);
+        return $this->hasMany(EvenementsSanitaire::class);
     }
 
     public function evenementsAlimentation(): HasMany
     {
-        return $this->hasMany(EvenementAlimentation::class);
+        return $this->hasMany(EvenementsAlimentation::class);
     }
 
     public function pesees(): HasMany
