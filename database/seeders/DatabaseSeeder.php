@@ -38,7 +38,7 @@ class DatabaseSeeder extends Seeder
         ])->map(fn ($race) => Race::create($race));
 
         // Créer des animaux (truies, cochettes, verrats)
-        $truies = Animal::factory(6)->create([
+        $truies = Animal::factory(4)->create([
             'type_animal' => 'truie',
             'sexe' => 'F',
             'race_id' => fn () => $races->random()->id,
