@@ -6,6 +6,12 @@ use App\Filament\Resources\Animals\Pages\CreateAnimal;
 use App\Filament\Resources\Animals\Pages\EditAnimal;
 use App\Filament\Resources\Animals\Pages\ListAnimals;
 use App\Filament\Resources\Animals\Pages\ViewAnimal;
+use App\Filament\Resources\Animals\RelationManagers\CyclesReproductionRelationManager;
+use App\Filament\Resources\Animals\RelationManagers\EvenementsSanitairesRelationManager;
+use App\Filament\Resources\Animals\RelationManagers\MouvementsRelationManager;
+use App\Filament\Resources\Animals\RelationManagers\PeseesRelationManager;
+use App\Filament\Resources\Animals\RelationManagers\PorteesRelationManager;
+use App\Filament\Resources\Animals\RelationManagers\TachesRelationManager;
 use App\Filament\Resources\Animals\Schemas\AnimalForm;
 use App\Filament\Resources\Animals\Schemas\AnimalInfolist;
 use App\Filament\Resources\Animals\Tables\AnimalsTable;
@@ -22,7 +28,8 @@ class AnimalResource extends Resource
 {
     protected static ?string $model = Animal::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+//    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+
     protected static string|null|\UnitEnum $navigationGroup = 'Reproduction';
 
     public static function form(Schema $schema): Schema
@@ -43,7 +50,12 @@ class AnimalResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            CyclesReproductionRelationManager::class,
+            PorteesRelationManager::class,
+            PeseesRelationManager::class,
+            EvenementsSanitairesRelationManager::class,
+            MouvementsRelationManager::class,
+            TachesRelationManager::class,
         ];
     }
 
@@ -52,7 +64,7 @@ class AnimalResource extends Resource
         return [
             'index' => ListAnimals::route('/'),
             'create' => CreateAnimal::route('/create'),
-//            'view' => ViewAnimal::route('/{record}'),
+            //            'view' => ViewAnimal::route('/{record}'),
             'edit' => EditAnimal::route('/{record}/edit'),
         ];
     }

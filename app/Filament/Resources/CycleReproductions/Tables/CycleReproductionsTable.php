@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\CycleReproductions\Tables;
 
+use App\Filament\Resources\CycleReproductions\Actions\EnregistrerMiseBasAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -73,18 +74,18 @@ class CycleReproductionsTable
                     ->alignCenter()
                     ->sortable(),
 
-                TextColumn::make('saillies')
-                    ->label('Première saillie')
-                    ->formatStateUsing(function ($record) {
-                        $premiereSaillie = $record->saillies()->orderBy('date_heure')->first();
-                        if (! $premiereSaillie) {
-                            return '-';
-                        }
-
-                        return $premiereSaillie->date_heure->format('d/m/Y H:i').' ('.$premiereSaillie->type.')';
-                    })
-                    ->placeholder('-')
-                    ->toggleable(),
+                //                TextColumn::make('saillies')
+                //                    ->label('Première saillie')
+                //                    ->formatStateUsing(function ($record) {
+                //                        $premiereSaillie = $record->saillies()->orderBy('date_heure')->first();
+                //                        if (! $premiereSaillie) {
+                //                            return '-';
+                //                        }
+                //
+                //                        return $premiereSaillie->date_heure->format('d/m/Y H:i').' ('.$premiereSaillie->type.')';
+                //                    })
+                //                    ->placeholder('-')
+                //                    ->toggleable(),
 
                 TextColumn::make('date_diagnostic')
                     ->label('Date diagnostic')
@@ -102,6 +103,24 @@ class CycleReproductionsTable
                     ->date('d/m/Y')
                     ->sortable()
                     ->placeholder('-'),
+
+                TextColumn::make('portee')
+                    ->label('Portée')
+                    ->badge()
+                    ->state(fn ($record) => $record->portee()->exists() ? 'Enregistrée' : 'Non enregistrée')
+                    ->color(fn ($record) => $record->portee()->exists() ? 'success' : 'warning')
+                    ->description(function ($record) {
+                        if ($record->portee) {
+                            return "{$record->portee->nb_nes_vifs} nés vivants";
+                        }
+
+                        if ($record->resultat_diagnostic !== 'positif') {
+                            return 'Diagnostic de gestation requis (positif)';
+                        }
+
+                        return 'Cliquez sur "Enregistrer la mise-bas"';
+                    })
+                    ->sortable(),
 
                 TextColumn::make('created_at')
                     ->label('Créé le')
@@ -143,6 +162,7 @@ class CycleReproductionsTable
                     ]),
             ])
             ->recordActions([
+                EnregistrerMiseBasAction::make(),
                 ViewAction::make(),
                 EditAction::make(),
             ])

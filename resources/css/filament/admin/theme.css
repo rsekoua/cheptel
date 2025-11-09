@@ -1,0 +1,14 @@
+.custom-nav-group-separator {
+    /* Cela s'applique à l'élément de liste <ul> qui contient le groupe */
+    /* Vous pouvez utiliser un pseudo-élément pour ajouter la ligne */
+    position: relative;
+    margin-bottom: 1.5rem; /* Espace après le séparateur */
+}
+
+/* Ajout d'une bordure en bas pour séparer visuellement le groupe */
+/*!* Le sélecteur exact peut nécessiter d'inspecter l'HTML de Filament 4 *!*/
+/*.custom-nav-group-separator > div {*/
+/*    !* Le div est souvent le conteneur immédiat des liens de navigation *!*/
+/*    padding-bottom: 1.5rem; !* Ajoute de l'espace avant la ligne *!*/
+/*    !*border-bottom: 1px solid theme('colors.gray.700', '#374151'); !* Couleur de la ligne *!*!*/
+/*}*/

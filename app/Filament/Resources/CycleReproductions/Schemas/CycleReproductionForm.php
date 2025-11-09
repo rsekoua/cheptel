@@ -20,40 +20,40 @@ class CycleReproductionForm
         return $schema
             ->components([
                 Section::make('Informations générales')
-                    ->description('Informations de base sur le cycle de reproduction')
+                    ->description('Les cycles sont créés automatiquement quand l\'animal passe au statut "Sevrée" ou "En chaleurs"')
                     ->schema([
                         Select::make('animal_id')
                             ->label('Animal')
                             ->relationship('animal', 'numero_identification')
                             ->searchable()
                             ->preload()
-                            ->required()
+                            ->disabled()
+                            ->dehydrated()
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Animal concerné par ce cycle de reproduction (truie ou cochette)')
+                                    ->tooltip('Animal concerné par ce cycle (généré automatiquement)')
                                     ->color('gray'),
                             ])),
 
                         TextInput::make('numero_cycle')
                             ->label('Numéro de cycle')
-                            ->required()
                             ->numeric()
-                            ->minValue(1)
-                            ->default(1)
+                            ->disabled()
+                            ->dehydrated()
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Numéro séquentiel du cycle pour cet animal (1 = premier cycle, 2 = deuxième cycle, etc.)')
+                                    ->tooltip('Numéro séquentiel calculé automatiquement (1 = premier cycle, 2 = deuxième, etc.)')
                                     ->color('gray'),
                             ])),
 
                         DatePicker::make('date_debut')
                             ->label('Date de début')
-                            ->required()
                             ->native(false)
-                            ->default(now())
+                            ->disabled()
+                            ->dehydrated()
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Date de début du cycle de reproduction')
+                                    ->tooltip('Date de début du cycle (générée automatiquement)')
                                     ->color('gray'),
                             ])),
 
@@ -84,7 +84,6 @@ class CycleReproductionForm
                             ])),
                     ])
                     ->columns(3),
-
 
                 Section::make('Saillies / Inséminations')
                     ->description('Enregistrement des multiples inséminations ou saillies (recommandé : 2-3 inséminations à 12-24h d\'intervalle)')
