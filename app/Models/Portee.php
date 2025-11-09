@@ -28,6 +28,7 @@ class Portee extends Model
         'poids_moyen_sevrage_kg',
         'lot_destination_id',
         'notes',
+        'nb_total',
     ];
 
     protected function casts(): array

@@ -13,7 +13,7 @@ class EnregistrerMiseBasAction
     public static function make(): Action
     {
         return Action::make('enregistrer_mise_bas')
-            ->label('Enregistrer la mise-bas')
+            ->label('Enregistrer la mise-bas #')
             ->icon(Heroicon::OutlinedPlusCircle)
             ->color('success')
             ->visible(fn ($record) => ! $record->portee()->exists()
@@ -23,7 +23,7 @@ class EnregistrerMiseBasAction
             ->tooltip(fn ($record) => $record->resultat_diagnostic !== 'positif'
                 ? 'Le diagnostic de gestation doit être positif avant d\'enregistrer une mise-bas'
                 : null)
-            ->form([
+            ->schema([
                 DateTimePicker::make('date_mise_bas')
                     ->label('Date et heure de mise-bas')
                     ->required()
@@ -42,7 +42,7 @@ class EnregistrerMiseBasAction
                     ->afterStateUpdated(function ($state, $set, $get) {
                         $nbMortNes = $get('nb_mort_nes') ?? 0;
                         $nbMomifies = $get('nb_momifies') ?? 0;
-                        $total = ($state ?? 0) + $nbMortNes + $nbMomifies;
+                        $total = ($state ?? 0) - $nbMortNes - $nbMomifies;
                         $set('nb_total', $total);
                     }),
 
@@ -57,7 +57,7 @@ class EnregistrerMiseBasAction
                     ->afterStateUpdated(function ($state, $set, $get) {
                         $nbNesVifs = $get('nb_nes_vifs') ?? 0;
                         $nbMomifies = $get('nb_momifies') ?? 0;
-                        $total = $nbNesVifs + ($state ?? 0) + $nbMomifies;
+                        $total = $nbNesVifs - ($state ?? 0) - $nbMomifies;
                         $set('nb_total', $total);
                     }),
 
@@ -72,12 +72,12 @@ class EnregistrerMiseBasAction
                     ->afterStateUpdated(function ($state, $set, $get) {
                         $nbNesVifs = $get('nb_nes_vifs') ?? 0;
                         $nbMortNes = $get('nb_mort_nes') ?? 0;
-                        $total = $nbNesVifs + $nbMortNes + ($state ?? 0);
+                        $total = $nbNesVifs - $nbMortNes - ($state ?? 0);
                         $set('nb_total', $total);
                     }),
 
                 TextInput::make('nb_total')
-                    ->label('Nombre total')
+                    ->label('Nombre total vivants')
                     ->numeric()
                     ->disabled()
                     ->dehydrated()
@@ -101,7 +101,7 @@ class EnregistrerMiseBasAction
                     'nb_nes_vifs' => $data['nb_nes_vifs'],
                     'nb_mort_nes' => $data['nb_mort_nes'],
                     'nb_momifies' => $data['nb_momifies'],
-                    'nb_total' => $data['nb_total'],
+                    // 'nb_total' => $data['nb_total'],
                     'poids_moyen_naissance_g' => $data['poids_moyen_naissance_g'] ?? null,
                 ]);
 

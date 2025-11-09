@@ -23,7 +23,7 @@ class AnimalFactory extends Factory
             'sexe' => fake()->randomElement(['F', 'M']),
             'date_naissance' => fake()->dateTimeBetween('-3 years', '-6 months'),
             'origine' => fake()->randomElement(['naissance_elevage', 'achat_externe']),
-            'statut_actuel' => fake()->randomElement(['sevree', 'en_chaleurs', 'gestante_attente', 'gestante_confirmee', 'en_lactation', 'reforme', 'active', 'retraite']),
+            'statut_actuel' => fake()->randomElement(['gestante_confirmee', 'en_lactation', 'active']),
             'salle_id' => null,
             'plan_alimentation_id' => null,
         ];

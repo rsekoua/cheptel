@@ -28,7 +28,7 @@ class AnimalResource extends Resource
 {
     protected static ?string $model = Animal::class;
 
-//    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    //    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static string|null|\UnitEnum $navigationGroup = 'Reproduction';
 
@@ -67,6 +67,11 @@ class AnimalResource extends Resource
             //            'view' => ViewAnimal::route('/{record}'),
             'edit' => EditAnimal::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) static::getModel()::count();
     }
 
     public static function getRecordRouteBindingEloquentQuery(): Builder

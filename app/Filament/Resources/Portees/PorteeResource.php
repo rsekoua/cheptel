@@ -21,7 +21,7 @@ class PorteeResource extends Resource
 {
     protected static ?string $model = Portee::class;
 
-//    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
+    //    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
 
     protected static string|null|\UnitEnum $navigationGroup = 'Reproduction';
 
@@ -61,5 +61,10 @@ class PorteeResource extends Resource
             'view' => ViewPortee::route('/{record}'),
             'edit' => EditPortee::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        return (string) static::getModel()::count();
     }
 }

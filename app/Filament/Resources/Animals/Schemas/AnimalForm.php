@@ -6,6 +6,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Schemas\Components\Icon;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -30,7 +31,8 @@ class AnimalForm
                                     ->color('gray'),
                             ])),
 
-                        Select::make('type_animal')
+//                        Select::make('type_animal')
+                        ToggleButtons::make('type_animal')
                             ->label('Type d\'animal')
                             ->required()
                             ->options([
@@ -38,8 +40,9 @@ class AnimalForm
                                 'cochette' => 'Cochette',
                                 'verrat' => 'Verrat',
                             ])
-                            ->native(false)
+                           // ->native(false)
                             ->live()
+                           ->inline()
                             ->afterStateUpdated(function ($state, $set) {
                                 // Définir automatiquement le sexe en fonction du type
                                 if (in_array($state, ['truie', 'cochette'])) {

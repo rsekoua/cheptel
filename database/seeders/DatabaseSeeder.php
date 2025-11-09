@@ -38,14 +38,16 @@ class DatabaseSeeder extends Seeder
         ])->map(fn ($race) => Race::create($race));
 
         // Créer des animaux (truies, cochettes, verrats)
-        $truies = Animal::factory(10)->create([
+        $truies = Animal::factory(6)->create([
             'type_animal' => 'truie',
+            'sexe' => 'F',
             'race_id' => fn () => $races->random()->id,
-            'statut_actuel' => 'sevree',
+            //'statut_actuel' => 'gestante_confirmee',
         ]);
 
-        $cochettes = Animal::factory(5)->create([
+        $cochettes = Animal::factory(2)->create([
             'type_animal' => 'cochette',
+            'sexe' => 'F',
             'race_id' => fn () => $races->random()->id,
             'statut_actuel' => 'en_chaleurs',
         ]);

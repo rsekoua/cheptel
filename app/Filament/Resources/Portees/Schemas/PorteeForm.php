@@ -76,7 +76,7 @@ class PorteeForm
                             ->afterStateUpdated(function ($state, $set, $get) {
                                 $nbMortNes = $get('nb_mort_nes') ?? 0;
                                 $nbMomifies = $get('nb_momifies') ?? 0;
-                                $total = ($state ?? 0) + $nbMortNes + $nbMomifies;
+                                $total = ($state ?? 0) - $nbMortNes - $nbMomifies;
                                 $set('nb_total', $total);
                             })
                             ->afterLabel(Schema::start([
@@ -96,7 +96,7 @@ class PorteeForm
                             ->afterStateUpdated(function ($state, $set, $get) {
                                 $nbNesVifs = $get('nb_nes_vifs') ?? 0;
                                 $nbMomifies = $get('nb_momifies') ?? 0;
-                                $total = $nbNesVifs + ($state ?? 0) + $nbMomifies;
+                                $total = $nbNesVifs - ($state ?? 0) - $nbMomifies;
                                 $set('nb_total', $total);
                             })
                             ->afterLabel(Schema::start([
@@ -116,7 +116,7 @@ class PorteeForm
                             ->afterStateUpdated(function ($state, $set, $get) {
                                 $nbNesVifs = $get('nb_nes_vifs') ?? 0;
                                 $nbMortNes = $get('nb_mort_nes') ?? 0;
-                                $total = $nbNesVifs + $nbMortNes + ($state ?? 0);
+                                $total = $nbNesVifs - $nbMortNes - ($state ?? 0);
                                 $set('nb_total', $total);
                             })
                             ->afterLabel(Schema::start([
@@ -126,15 +126,15 @@ class PorteeForm
                             ])),
 
                         TextInput::make('nb_total')
-                            ->label('Nombre total')
+                            ->label('Nombre total vivant')
                             ->numeric()
                             ->disabled()
                             ->dehydrated()
                             ->suffix('porcelets')
-                            ->helperText('Calculé automatiquement : Nés vivants + Mort-nés + Momifiés')
+                            // ->helperText('Calculé automatiquement : Nés vivants + Mort-nés + Momifiés')
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Nombre total de porcelets (vivants + mort-nés + momifiés)')
+                                    ->tooltip('Nombre total de porcelets (vivants - mort-nés - momifiés)')
                                     ->color('gray'),
                             ])),
 

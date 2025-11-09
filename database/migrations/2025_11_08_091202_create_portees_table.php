@@ -19,7 +19,8 @@ return new class extends Migration
             $table->integer('nb_nes_vifs');
             $table->integer('nb_mort_nes')->default(0);
             $table->integer('nb_momifies')->default(0);
-            $table->integer('nb_total')->storedAs('nb_nes_vifs + nb_mort_nes + nb_momifies');
+            //            $table->integer('nb_total')->storedAs('nb_nes_vifs - nb_mort_nes - nb_momifies');
+            $table->integer('nb_total')->default(0);
             $table->integer('poids_moyen_naissance_g')->nullable()->comment('Poids moyen à la naissance en grammes');
             $table->date('date_sevrage')->nullable();
             $table->integer('nb_sevres')->nullable();

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Animals\Pages;
 
 use App\Filament\Resources\Animals\AnimalResource;
+use App\Filament\Resources\Animals\Widgets\AnimalStatsOverview;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
@@ -14,6 +15,13 @@ class ListAnimals extends ListRecords
     {
         return [
             CreateAction::make(),
+        ];
+    }
+
+    protected function getHeaderWidgets(): array
+    {
+        return [
+            AnimalStatsOverview::class,
         ];
     }
 }
