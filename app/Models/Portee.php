@@ -82,13 +82,13 @@ class Portee extends Model
     {
         return Attribute::make(
             get: function (): ?float {
-                if ($this->nb_nes_vifs === 0) {
+                if ($this->nb_total === 0) {
                     return null;
                 }
 
-                $mortalite = $this->nb_nes_vifs - ($this->nb_sevres ?? 0);
+                $mortalite = $this->nb_total - ($this->nb_sevres ?? 0);
 
-                return round(($mortalite / $this->nb_nes_vifs) * 100, 2);
+                return round(($mortalite / $this->nb_total) * 100, 2);
             }
         );
     }

@@ -65,6 +65,9 @@ class PorteeResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return (string) static::getModel()::count();
+        $nombrePortees = static::getModel()::count();
+        $nombrePorcelets = static::getModel()::sum('nb_total');
+
+        return sprintf('%d  (%d p)', $nombrePortees, $nombrePorcelets);
     }
 }

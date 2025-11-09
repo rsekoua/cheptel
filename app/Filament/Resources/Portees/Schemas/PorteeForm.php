@@ -8,6 +8,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Icon;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -54,11 +55,11 @@ class PorteeForm
                 Section::make('Mise-bas')
                     ->description('Données de la mise-bas (naissance des porcelets)')
                     ->schema([
-                        DateTimePicker::make('date_mise_bas')
+                        DatePicker::make('date_mise_bas')
                             ->label('Date et heure de mise-bas')
                             ->required()
                             ->native(false)
-                            ->seconds(false)
+//                            ->seconds(false)
                             ->default(now())
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
@@ -68,10 +69,10 @@ class PorteeForm
 
                         TextInput::make('nb_nes_vifs')
                             ->label('Nombre de nés vivants')
-                            ->required()
+                             ->required()
                             ->numeric()
-                            ->minValue(0)
-                            ->suffix('porcelets')
+                             ->minValue(0)
+                            ->suffix(' porcelets')
                             ->live()
                             ->afterStateUpdated(function ($state, $set, $get) {
                                 $nbMortNes = $get('nb_mort_nes') ?? 0;
@@ -91,7 +92,7 @@ class PorteeForm
                             ->numeric()
                             ->minValue(0)
                             ->default(0)
-                            ->suffix('porcelets')
+                            ->suffix(' porcelets')
                             ->live()
                             ->afterStateUpdated(function ($state, $set, $get) {
                                 $nbNesVifs = $get('nb_nes_vifs') ?? 0;
@@ -130,7 +131,7 @@ class PorteeForm
                             ->numeric()
                             ->disabled()
                             ->dehydrated()
-                            ->suffix('porcelets')
+                            ->suffix(' porcelets')
                             // ->helperText('Calculé automatiquement : Nés vivants + Mort-nés + Momifiés')
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)

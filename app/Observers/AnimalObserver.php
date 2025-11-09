@@ -61,7 +61,6 @@ class AnimalObserver
     protected function estPremiereChaleur(Animal $animal): bool
     {
         // Si c'est une cochette sans cycles de reproduction, c'est sa première chaleur
-        return $animal->type_animal === 'cochette'
-            && ! CycleReproduction::where('animal_id', $animal->id)->exists();
+        return $animal->type_animal === 'cochette' && ! CycleReproduction::where('animal_id', $animal->id)->exists();
     }
 }

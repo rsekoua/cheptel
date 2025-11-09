@@ -181,6 +181,7 @@ class CycleReproductionForm
                             ])
                             ->columns(2)
                             ->itemLabel(fn (array $state): ?string => isset($state['date_heure']) ? \Carbon\Carbon::parse($state['date_heure'])->format('d/m/Y H:i').' - '.($state['type'] ?? '') : null)
+//                            ->itemLabel(fn (array $state): ?string => isset($state['date_heure']) ? \Carbon\Carbon::parse($state['date_heure'])->format('d/m/Y H:i').' - '.($state['type'] ?? '') : null)
                             ->addActionLabel('Ajouter une saillie / insémination')
                             ->reorderable(false)
                             ->collapsible()
