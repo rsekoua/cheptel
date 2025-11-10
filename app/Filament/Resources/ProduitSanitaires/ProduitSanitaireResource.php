@@ -13,7 +13,6 @@ use App\Models\ProduitSanitaire;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
 class ProduitSanitaireResource extends Resource
@@ -21,7 +20,8 @@ class ProduitSanitaireResource extends Resource
     protected static ?string $model = ProduitSanitaire::class;
 
     protected static string|BackedEnum|null $navigationIcon = null;
-    protected static string|null|\UnitEnum $navigationGroup = "Parametres";
+
+    protected static string|null|\UnitEnum $navigationGroup = 'Parametres';
 
     public static function form(Schema $schema): Schema
     {
@@ -49,9 +49,9 @@ class ProduitSanitaireResource extends Resource
     {
         return [
             'index' => ListProduitSanitaires::route('/'),
-//            'create' => CreateProduitSanitaire::route('/create'),
-//            'view' => ViewProduitSanitaire::route('/{record}'),
-//            'edit' => EditProduitSanitaire::route('/{record}/edit'),
+            //            'create' => CreateProduitSanitaire::route('/create'),
+            //            'view' => ViewProduitSanitaire::route('/{record}'),
+            //            'edit' => EditProduitSanitaire::route('/{record}/edit'),
         ];
     }
 }

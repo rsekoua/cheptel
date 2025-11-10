@@ -20,8 +20,8 @@ class TypeSalleResource extends Resource
 {
     protected static ?string $model = TypeSalle::class;
 
-//    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-    protected static string|null|\UnitEnum $navigationGroup = "Parametres";
+    //    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|null|\UnitEnum $navigationGroup = 'Parametres';
 
     public static function form(Schema $schema): Schema
     {
@@ -49,9 +49,9 @@ class TypeSalleResource extends Resource
     {
         return [
             'index' => ListTypeSalles::route('/'),
-//            'create' => CreateTypeSalle::route('/create'),
-//            'view' => ViewTypeSalle::route('/{record}'),
-//            'edit' => EditTypeSalle::route('/{record}/edit'),
+            //            'create' => CreateTypeSalle::route('/create'),
+            //            'view' => ViewTypeSalle::route('/{record}'),
+            //            'edit' => EditTypeSalle::route('/{record}/edit'),
         ];
     }
 }

@@ -67,7 +67,7 @@ class ProduitSanitaireForm
 
                 TextInput::make('stock_alerte')
                     ->numeric()
-                    ->helperText('Seuil d\'alerte pour réapprovisionnement')
+                    ->helperText('Seuil d\'alerte pour réapprovisionnement'),
             ]);
     }
 }

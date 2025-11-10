@@ -13,7 +13,6 @@ use App\Models\Saillie;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 
 class SaillieResource extends Resource
@@ -21,6 +20,7 @@ class SaillieResource extends Resource
     protected static ?string $model = Saillie::class;
 
     protected static string|BackedEnum|null $navigationIcon = null;
+
     protected static string|null|\UnitEnum $navigationGroup = 'Reproduction';
 
     public static function form(Schema $schema): Schema
@@ -49,9 +49,9 @@ class SaillieResource extends Resource
     {
         return [
             'index' => ListSaillies::route('/'),
-//            'create' => CreateSaillie::route('/create'),
-//            'view' => ViewSaillie::route('/{record}'),
-//            'edit' => EditSaillie::route('/{record}/edit'),
+            //            'create' => CreateSaillie::route('/create'),
+            //            'view' => ViewSaillie::route('/{record}'),
+            //            'edit' => EditSaillie::route('/{record}/edit'),
         ];
     }
 }

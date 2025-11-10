@@ -2,10 +2,12 @@
 
 namespace App\Filament\Resources\CycleReproductions\Actions;
 
+use App\Filament\Resources\Portees\PorteeResource;
 use App\Models\Portee;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
 
 class EnregistrerMiseBasAction
@@ -94,14 +96,14 @@ class EnregistrerMiseBasAction
             ])
             ->action(function ($record, array $data) {
                 // Créer la portée automatiquement
-                Portee::create([
+                $portee = Portee::create([
                     'cycle_reproduction_id' => $record->id,
                     'animal_id' => $record->animal_id,
                     'date_mise_bas' => $data['date_mise_bas'],
                     'nb_nes_vifs' => $data['nb_nes_vifs'],
                     'nb_mort_nes' => $data['nb_mort_nes'],
                     'nb_momifies' => $data['nb_momifies'],
-                    // 'nb_total' => $data['nb_total'],
+                    'nb_total' => $data['nb_total'],
                     'poids_moyen_naissance_g' => $data['poids_moyen_naissance_g'] ?? null,
                 ]);
 
@@ -109,8 +111,31 @@ class EnregistrerMiseBasAction
                 $record->update([
                     'date_mise_bas_reelle' => $data['date_mise_bas'],
                 ]);
+
+                // Stocker l'ID de la portée et le nombre total pour la redirection et notification
+                session()->put('portee_id', $portee->id);
+                session()->put('nb_total', $portee->nb_total);
             })
-            ->successNotificationTitle('Mise-bas enregistrée avec succès')
-            ->after(fn () => redirect()->back());
+            ->successNotification(
+                fn ($record) => Notification::make()
+                    ->success()
+                    ->title('Mise-bas enregistrée avec succès')
+                    ->body('La portée a été créée avec '.session()->get('nb_total', 0).' porcelets.')
+                    ->actions([
+                        Action::make('view_portee')
+                            ->label('Voir la portée')
+                            ->url(fn () => PorteeResource::getUrl('view', ['record' => session()->get('portee_id')]))
+                            ->button(),
+                    ])
+            )
+            ->successRedirectUrl(function () {
+                // Rediriger vers la portée créée
+                $porteeId = session()->pull('portee_id');
+                if ($porteeId) {
+                    return PorteeResource::getUrl('view', ['record' => $porteeId]);
+                }
+
+                return null;
+            });
     }
 }

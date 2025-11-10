@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\PlanAlimentations\Schemas;
 
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
@@ -51,7 +51,7 @@ class PlanAlimentationForm
                     ->helperText('Quantité d\'aliment par jour et par animal (laisser vide si à volonté)'),
 
                 Toggle::make('a_volonte')
-                    ->helperText('Cocher si l\'alimentation est distribuée à volonté (ex: lactation)')
+                    ->helperText('Cocher si l\'alimentation est distribuée à volonté (ex: lactation)'),
             ]);
     }
 }

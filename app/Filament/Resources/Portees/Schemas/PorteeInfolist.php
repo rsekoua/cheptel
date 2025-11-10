@@ -104,18 +104,22 @@ class PorteeInfolist
 
                 Section::make('Indicateurs de performance')
                     ->schema([
-                        TextEntry::make('taux_mortalite_maternite')
-                            ->label('Taux de mortalité en maternité')
-                            ->state(fn ($record) => $record->taux_mortalite_maternite)
+                        TextEntry::make('taux_natalite_maternite')
+                            ->label('Taux de natalité en maternité')
+                            ->state(fn ($record) => $record->taux_natalite_maternite)
                             ->badge()
                             ->color(fn ($state): string => match (true) {
+//                                $state === null => 'gray',
+//                                $state < 10 => 'success',
+//                                $state < 15 => 'warning',
+//                                default => 'danger',
                                 $state === null => 'gray',
-                                $state < 10 => 'success',
-                                $state < 15 => 'warning',
+                                $state > 90 => 'success',
+                                $state > 85 => 'warning',
                                 default => 'danger',
                             })
                             ->formatStateUsing(fn ($state): string => $state !== null ? number_format($state, 2).' %' : '-')
-                            ->helperText('Pourcentage de mortalité entre la naissance et le sevrage'),
+                            ->helperText('Pourcentage de natalité lors de la mise bas'),
                     ])
                     ->columns(1),
 

@@ -20,8 +20,8 @@ class PlanAlimentationResource extends Resource
 {
     protected static ?string $model = PlanAlimentation::class;
 
-//    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-    protected static string|null|\UnitEnum $navigationGroup = "Parametres";
+    //    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|null|\UnitEnum $navigationGroup = 'Parametres';
 
     public static function form(Schema $schema): Schema
     {
@@ -49,9 +49,9 @@ class PlanAlimentationResource extends Resource
     {
         return [
             'index' => ListPlanAlimentations::route('/'),
-//            'create' => CreatePlanAlimentation::route('/create'),
-//            'view' => ViewPlanAlimentation::route('/{record}'),
-//            'edit' => EditPlanAlimentation::route('/{record}/edit'),
+            //            'create' => CreatePlanAlimentation::route('/create'),
+            //            'view' => ViewPlanAlimentation::route('/{record}'),
+            //            'edit' => EditPlanAlimentation::route('/{record}/edit'),
         ];
     }
 }

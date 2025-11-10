@@ -106,19 +106,28 @@ class CycleReproductionsTable
 
                 TextColumn::make('portee')
                     ->label('Portée')
-                    ->badge()
-                    ->state(fn ($record) => $record->portee()->exists() ? 'Enregistrée' : 'Non enregistrée')
-                    ->color(fn ($record) => $record->portee()->exists() ? 'success' : 'warning')
-                    ->description(function ($record) {
+                    ->formatStateUsing(function ($record) {
                         if ($record->portee) {
-                            return "{$record->portee->nb_nes_vifs} nés vivants";
+                            return $record->portee->numero_identification;
                         }
 
                         if ($record->resultat_diagnostic !== 'positif') {
-                            return 'Diagnostic de gestation requis (positif)';
+                            return 'Diagnostic requis';
                         }
 
-                        return 'Cliquez sur "Enregistrer la mise-bas"';
+                        return 'Non enregistrée';
+                    })
+                    ->badge()
+                    ->color(fn ($record) => $record->portee ? 'success' : 'gray')
+                    ->url(fn ($record) => $record->portee ? \App\Filament\Resources\Portees\PorteeResource::getUrl('view', ['record' => $record->portee->id]) : null)
+                    ->openUrlInNewTab()
+                    ->icon(fn ($record) => $record->portee ? 'heroicon-o-link' : null)
+                    ->description(function ($record) {
+                        if ($record->portee) {
+                            return "{$record->portee->nb_total} porcelets vivants";
+                        }
+
+                        return null;
                     })
                     ->sortable(),
 
@@ -163,7 +172,7 @@ class CycleReproductionsTable
             ])
             ->recordActions([
                 EnregistrerMiseBasAction::make(),
-                ViewAction::make(),
+                // ViewAction::make(),
                 EditAction::make(),
             ])
             ->toolbarActions([

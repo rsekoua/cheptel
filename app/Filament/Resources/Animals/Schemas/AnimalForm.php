@@ -31,7 +31,7 @@ class AnimalForm
                                     ->color('gray'),
                             ])),
 
-//                        Select::make('type_animal')
+                        //                        Select::make('type_animal')
                         ToggleButtons::make('type_animal')
                             ->label('Type d\'animal')
                             ->required()
@@ -42,7 +42,7 @@ class AnimalForm
                             ])
                            // ->native(false)
                             ->live()
-                           ->inline()
+                            ->inline()
                             ->afterStateUpdated(function ($state, $set) {
                                 // Définir automatiquement le sexe en fonction du type
                                 if (in_array($state, ['truie', 'cochette'])) {

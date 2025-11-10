@@ -3,8 +3,8 @@
 namespace App\Filament\Resources\Races\Schemas;
 
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Icon;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -21,7 +21,7 @@ class RaceForm
                     ->afterLabel(Schema::start([
                         Icon::make(Heroicon::QuestionMarkCircle)
                             ->tooltip('Nom de la race (ex: Large White, Landrace, Piétrain, Duroc)')
-                            ->color('gray')
+                            ->color('gray'),
                     ])),
 
                 Textarea::make('description')
@@ -29,7 +29,7 @@ class RaceForm
                     ->afterLabel(Schema::start([
                         Icon::make(Heroicon::QuestionMarkCircle)
                             ->tooltip('Caractéristiques génétiques et aptitudes de la race')
-                            ->color('gray')
+                            ->color('gray'),
                     ])),
 
                 Select::make('type')
@@ -43,7 +43,7 @@ class RaceForm
                     ->afterLabel(Schema::start([
                         Icon::make(Heroicon::QuestionMarkCircle)
                             ->tooltip('Maternelle = prolificité/qualités maternelles. Paternelle = qualité de viande. Mixte = usage multiple')
-                            ->color('gray')
+                            ->color('gray'),
                     ])),
 
                 TextInput::make('gmq_moyen')
@@ -52,7 +52,7 @@ class RaceForm
                     ->afterLabel(Schema::start([
                         Icon::make(Heroicon::QuestionMarkCircle)
                             ->tooltip('Gain Moyen Quotidien attendu en grammes par jour (généralement 700-850 g/j)')
-                            ->color('gray')
+                            ->color('gray'),
                     ])),
 
                 TextInput::make('poids_adulte_moyen')
@@ -61,8 +61,8 @@ class RaceForm
                     ->afterLabel(Schema::start([
                         Icon::make(Heroicon::QuestionMarkCircle)
                             ->tooltip('Poids moyen à l\'âge adulte en kilogrammes (généralement 250-300 kg)')
-                            ->color('gray')
-                    ]))
+                            ->color('gray'),
+                    ])),
             ]);
     }
 }

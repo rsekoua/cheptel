@@ -21,8 +21,9 @@ class RaceResource extends Resource
     protected static ?string $model = Race::class;
 
     protected static string|BackedEnum|null $navigationIcon = null;
-//    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-    protected static string|null|\UnitEnum $navigationGroup = "Parametres";
+
+    //    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|null|\UnitEnum $navigationGroup = 'Parametres';
 
     public static function form(Schema $schema): Schema
     {
@@ -50,9 +51,9 @@ class RaceResource extends Resource
     {
         return [
             'index' => ListRaces::route('/'),
-//            'create' => CreateRace::route('/create'),
-//            'view' => ViewRace::route('/{record}'),
-//            'edit' => EditRace::route('/{record}/edit'),
+            //            'create' => CreateRace::route('/create'),
+            //            'view' => ViewRace::route('/{record}'),
+            //            'edit' => EditRace::route('/{record}/edit'),
         ];
     }
 }

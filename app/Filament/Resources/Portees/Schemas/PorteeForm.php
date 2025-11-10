@@ -3,12 +3,10 @@
 namespace App\Filament\Resources\Portees\Schemas;
 
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Icon;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -69,9 +67,9 @@ class PorteeForm
 
                         TextInput::make('nb_nes_vifs')
                             ->label('Nombre de nés vivants')
-                             ->required()
+                            ->required()
                             ->numeric()
-                             ->minValue(0)
+                            ->minValue(0)
                             ->suffix(' porcelets')
                             ->live()
                             ->afterStateUpdated(function ($state, $set, $get) {

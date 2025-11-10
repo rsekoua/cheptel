@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use Filament\Enums\UserMenuPosition;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -30,8 +31,14 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->colors([
-                'primary' => Color::Purple,
+                'danger' => Color::Red,
+                'gray' => Color::Gray,
+                'info' => Color::Blue,
+                'primary' => Color::Indigo,
+                'success' => Color::Emerald,
+                'warning' => Color::Orange,
             ])
+            ->userMenu(position: UserMenuPosition::Sidebar)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
@@ -58,10 +65,10 @@ class AdminPanelProvider extends PanelProvider
             ])
 //            ->viteTheme('resources/css/filament/admin/theme.css')
             ->navigationGroups([
-                NavigationGroup::make()
-                    ->label('Parametres')
-                    ->icon('heroicon-o-users')
-                    ->extraSidebarAttributes(['class' => 'custom-nav-group-separator']), // Ajout d'une classe
+                //  NavigationGroup::make()
+                //                    ->label('Parametres')
+                //                    ->icon('heroicon-o-users')
+                //                    ->extraSidebarAttributes(['class' => 'custom-nav-group-separator']), // Ajout d'une classe
 
                 NavigationGroup::make()
                     ->label('Paramètres du Système')

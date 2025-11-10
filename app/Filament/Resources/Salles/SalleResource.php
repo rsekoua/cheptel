@@ -20,9 +20,10 @@ class SalleResource extends Resource
 {
     protected static ?string $model = Salle::class;
 
-//    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    //    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string|null|\UnitEnum $navigationGroup = "Parametres";
+    protected static string|null|\UnitEnum $navigationGroup = 'Parametres';
+
     public static function form(Schema $schema): Schema
     {
         return SalleForm::configure($schema);
@@ -49,9 +50,9 @@ class SalleResource extends Resource
     {
         return [
             'index' => ListSalles::route('/'),
-//            'create' => CreateSalle::route('/create'),
-//            'view' => ViewSalle::route('/{record}'),
-//            'edit' => EditSalle::route('/{record}/edit'),
+            //            'create' => CreateSalle::route('/create'),
+            //            'view' => ViewSalle::route('/{record}'),
+            //            'edit' => EditSalle::route('/{record}/edit'),
         ];
     }
 }

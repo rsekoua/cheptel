@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Portees\Tables;
 
+use App\Filament\Resources\Portees\Actions\SevrerPorteesAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -99,20 +100,35 @@ class PorteesTable
                     ->placeholder('-')
                     ->toggleable(),
 
-                TextColumn::make('taux_mortalite_maternite')
-                    ->label('Mortalité')
-                    ->state(fn ($record) => $record->taux_mortalite_maternite)
+                TextColumn::make('taux_natalite_maternite')
+                    ->label('Natalité')
+                    ->state(fn ($record) => $record->taux_natalite_maternite)
                     ->badge()
                     ->color(fn ($state): string => match (true) {
                         $state === null => 'gray',
-                        $state < 10 => 'success',
-                        $state < 15 => 'warning',
+                        $state > 90 => 'success',
+                        $state > 85 => 'warning',
                         default => 'danger',
                     })
                     ->formatStateUsing(fn ($state): string => $state !== null ? number_format($state, 2).' %' : '-')
                     ->tooltip('Taux de mortalité en maternité (de la naissance au sevrage)')
                     ->alignCenter()
                     ->sortable(),
+
+//                TextColumn::make('taux_mortalite_maternite')
+//                    ->label('Mortalité')
+//                    ->state(fn ($record) => $record->taux_mortalite_maternite)
+//                    ->badge()
+//                    ->color(fn ($state): string => match (true) {
+//                        $state === null => 'gray',
+//                        $state < 10 => 'success',
+//                        $state < 15 => 'warning',
+//                        default => 'danger',
+//                    })
+//                    ->formatStateUsing(fn ($state): string => $state !== null ? number_format($state, 2).' %' : '-')
+//                    ->tooltip('Taux de mortalité en maternité (de la naissance au sevrage)')
+//                    ->alignCenter()
+//                    ->sortable(),
 
                 TextColumn::make('lotDestination.numero_lot')
                     ->label('Lot destination')
@@ -169,6 +185,7 @@ class PorteesTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
+                    SevrerPorteesAction::make(),
                     DeleteBulkAction::make(),
                 ]),
             ])

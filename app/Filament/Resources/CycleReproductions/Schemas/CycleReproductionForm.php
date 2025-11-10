@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\CycleReproductions\Schemas;
 
+use App\Rules\DateDiagnosticAfterSaillieRule;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Repeater;
@@ -48,12 +49,13 @@ class CycleReproductionForm
 
                         DatePicker::make('date_debut')
                             ->label('Date de début')
+                            ->required()
                             ->native(false)
-                            ->disabled()
-                            ->dehydrated()
+                            ->default(now())
+                            ->helperText('Générée automatiquement, mais modifiable pour les enregistrements différés')
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Date de début du cycle (générée automatiquement)')
+                                    ->tooltip('Date de début du cycle (générée automatiquement, modifiable pour enregistrements différés)')
                                     ->color('gray'),
                             ])),
 
@@ -83,7 +85,7 @@ class CycleReproductionForm
                                     ->color('gray'),
                             ])),
                     ])
-                    ->columns(3),
+                    ->columns(2),
 
                 Section::make('Saillies / Inséminations')
                     ->description('Enregistrement des multiples inséminations ou saillies (recommandé : 2-3 inséminations à 12-24h d\'intervalle)')
@@ -91,6 +93,24 @@ class CycleReproductionForm
                         Repeater::make('saillies')
                             ->label('Liste des saillies')
                             ->relationship()
+                            ->live()
+                            ->afterStateUpdated(function ($state, $set) {
+                                // Recalculer la date de mise-bas prévue quand les saillies changent
+                                // (notamment quand une saillie est supprimée)
+                                $saillies = $state ?? [];
+                                $dates = array_filter(array_column($saillies, 'date_heure'));
+
+                                if (! empty($dates)) {
+                                    // Il y a au moins une saillie avec une date
+                                    $premiereDate = min($dates);
+                                    $dateSaillie = \Carbon\Carbon::parse($premiereDate);
+                                    $dateMiseBasPrevue = $dateSaillie->copy()->addDays(114);
+                                    $set('../date_mise_bas_prevue', $dateMiseBasPrevue->format('Y-m-d'));
+                                } else {
+                                    // Aucune saillie avec date, vider la date de mise-bas prévue
+                                    $set('../date_mise_bas_prevue', null);
+                                }
+                            })
                             ->schema([
                                 Select::make('type')
                                     ->label('Type')
@@ -113,20 +133,24 @@ class CycleReproductionForm
                                     ->required()
                                     ->native(false)
                                     ->seconds(false)
-                                    ->default(now())
+                                    // ->default(now())
                                     ->live()
                                     ->afterStateUpdated(function ($state, $set, $get) {
                                         // Calculer la date de mise-bas prévue basée sur la PREMIÈRE saillie
                                         $saillies = $get('../../saillies') ?? [];
-                                        if (! empty($saillies)) {
-                                            // Trouver la date de saillie la plus ancienne
-                                            $dates = array_filter(array_column($saillies, 'date_heure'));
-                                            if (! empty($dates)) {
-                                                $premiereDate = min($dates);
-                                                $dateSaillie = \Carbon\Carbon::parse($premiereDate);
-                                                $dateMiseBasPrevue = $dateSaillie->copy()->addDays(114);
-                                                $set('../../date_mise_bas_prevue', $dateMiseBasPrevue->format('Y-m-d'));
-                                            }
+
+                                        // Trouver la date de saillie la plus ancienne
+                                        $dates = array_filter(array_column($saillies, 'date_heure'));
+
+                                        if (! empty($dates)) {
+                                            // Il y a au moins une saillie avec une date
+                                            $premiereDate = min($dates);
+                                            $dateSaillie = \Carbon\Carbon::parse($premiereDate);
+                                            $dateMiseBasPrevue = $dateSaillie->copy()->addDays(114);
+                                            $set('../../date_mise_bas_prevue', $dateMiseBasPrevue->format('Y-m-d'));
+                                        } else {
+                                            // Aucune saillie avec date, vider la date de mise-bas prévue
+                                            $set('../../date_mise_bas_prevue', null);
                                         }
                                     })
                                     ->afterLabel(Schema::start([
@@ -181,7 +205,24 @@ class CycleReproductionForm
                             ])
                             ->columns(2)
                             ->itemLabel(fn (array $state): ?string => isset($state['date_heure']) ? \Carbon\Carbon::parse($state['date_heure'])->format('d/m/Y H:i').' - '.($state['type'] ?? '') : null)
-//                            ->itemLabel(fn (array $state): ?string => isset($state['date_heure']) ? \Carbon\Carbon::parse($state['date_heure'])->format('d/m/Y H:i').' - '.($state['type'] ?? '') : null)
+                            ->deleteAction(
+                                fn ($action) => $action->after(function ($get, $set) {
+                                    // Après suppression d'une saillie, recalculer ou vider la date de mise-bas prévue
+                                    $saillies = $get('saillies') ?? [];
+                                    $dates = array_filter(array_column($saillies, 'date_heure'));
+
+                                    if (! empty($dates)) {
+                                        // Il reste des saillies avec date
+                                        $premiereDate = min($dates);
+                                        $dateSaillie = \Carbon\Carbon::parse($premiereDate);
+                                        $dateMiseBasPrevue = $dateSaillie->copy()->addDays(114);
+                                        $set('date_mise_bas_prevue', $dateMiseBasPrevue->format('Y-m-d'));
+                                    } else {
+                                        // Plus de saillies, vider la date
+                                        $set('date_mise_bas_prevue', null);
+                                    }
+                                })
+                            )
                             ->addActionLabel('Ajouter une saillie / insémination')
                             ->reorderable(false)
                             ->collapsible()
@@ -199,9 +240,13 @@ class CycleReproductionForm
                         DatePicker::make('date_diagnostic')
                             ->label('Date du diagnostic')
                             ->native(false)
+                            ->rules([
+                                fn ($get, $record) => new DateDiagnosticAfterSaillieRule($get, $record),
+                            ])
+                            ->helperText('')
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Date du diagnostic de gestation (généralement 21-28 jours après la saillie)')
+                                    ->tooltip('⚠️ Date du diagnostic de gestation nécessite au moins une saillie enregistrée. Doit être après la première saillie.')
                                     ->color('gray'),
                             ])),
 
@@ -230,12 +275,10 @@ class CycleReproductionForm
                         DatePicker::make('date_mise_bas_prevue')
                             ->label('Date de mise-bas prévue')
                             ->native(false)
-                            ->disabled()
-                            ->dehydrated()
-                            ->helperText('Calculée automatiquement : date de saillie + 114 jours')
+                            ->helperText('Calculée automatiquement (date de saillie + 114 jours), mais modifiable')
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Date de mise-bas prévue (calculée automatiquement : date saillie + 114 jours de gestation)')
+                                    ->tooltip('Date de mise-bas prévue (calculée automatiquement : date saillie + 114 jours de gestation, modifiable)')
                                     ->color('gray'),
                             ])),
 
