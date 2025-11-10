@@ -30,9 +30,10 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->registration()
             ->topbar(false)
             ->colors([
-                'primary' => Color::Green,
+                'primary' => Color::Indigo,
             ])
             ->userMenu(position: UserMenuPosition::Sidebar)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
