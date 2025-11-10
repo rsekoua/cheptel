@@ -42,14 +42,16 @@ class LotsTable
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
                         'actif' => 'success',
-                        'termine' => 'gray',
-                        'vide' => 'danger',
+                        'transfere' => 'info',
+                        'vendu' => 'gray',
+                        'cloture' => 'warning',
                         default => 'gray',
                     })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'actif' => 'Actif',
-                        'termine' => 'Terminé',
-                        'vide' => 'Vide',
+                        'transfere' => 'Transféré',
+                        'vendu' => 'Vendu',
+                        'cloture' => 'Clôturé',
                         default => $state,
                     })
                     ->sortable(),
@@ -219,8 +221,9 @@ class LotsTable
                     ->label('Statut')
                     ->options([
                         'actif' => 'Actif',
-                        'termine' => 'Terminé',
-                        'vide' => 'Vide',
+                        'transfere' => 'Transféré',
+                        'vendu' => 'Vendu',
+                        'cloture' => 'Clôturé',
                     ])
                     ->multiple(),
 

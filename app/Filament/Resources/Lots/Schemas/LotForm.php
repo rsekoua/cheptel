@@ -61,8 +61,9 @@ class LotForm
                             ->required()
                             ->options([
                                 'actif' => 'Actif',
-                                'termine' => 'Terminé',
-                                'vide' => 'Vide',
+                                'transfere' => 'Transféré',
+                                'vendu' => 'Vendu',
+                                'cloture' => 'Clôturé',
                             ])
                             ->default('actif')
                             ->native(false)
