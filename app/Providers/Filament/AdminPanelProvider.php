@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Resources\Animals\AnimalResource;
 use Filament\Enums\UserMenuPosition;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -30,7 +31,11 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->profile()
             ->registration()
+            ->passwordReset()
+            ->emailVerification()
+            ->emailChangeVerification()
             ->topbar(false)
             ->colors([
                 'primary' => Color::Indigo,
