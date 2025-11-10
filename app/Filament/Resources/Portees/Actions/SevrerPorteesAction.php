@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Portees\Actions;
 
+use App\Models\CycleReproduction;
 use App\Models\Lot;
 use App\Models\Portee;
 use Filament\Actions\BulkAction;
@@ -106,12 +107,12 @@ class SevrerPorteesAction
 
                             Select::make('salle_id')
                                 ->label('Salle de destination')
-                                ->relationship(
-                                    'salle',
-                                    'nom',
-                                    fn ($query) => $query->whereHas('typeSalle', fn ($q) => $q->where('nom', 'Post-sevrage'))
+                                ->options(function () {
+                                    return \App\Models\Salle::query()
+                                        ->whereHas('typeSalle', fn ($q) => $q->where('nom', 'Post-sevrage'))
                                         ->where('statut', 'disponible')
-                                )
+                                        ->pluck('nom', 'id');
+                                })
                                 ->searchable()
                                 ->preload()
                                 ->native(false)
@@ -123,11 +124,11 @@ class SevrerPorteesAction
 
                             Select::make('plan_alimentation_id')
                                 ->label('Plan d\'alimentation')
-                                ->relationship(
-                                    'planAlimentation',
-                                    'nom',
-                                    fn ($query) => $query->where('type_animal', 'production')
-                                )
+                                ->options(function () {
+                                    return \App\Models\PlanAlimentation::query()
+                                        ->where('type_animal', 'production')
+                                        ->pluck('nom', 'id');
+                                })
                                 ->searchable()
                                 ->preload()
                                 ->native(false)
@@ -169,15 +170,6 @@ class SevrerPorteesAction
                             ->numeric()
                             ->minValue(0)
                             ->suffix('porcelets')
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(function ($state, $set, $get) {
-                                $nbSevres = $state ?? 0;
-                                $poidsTotal = $get('poids_total_kg') ?? 0;
-                                $set('poids_moyen_kg', $nbSevres > 0 ? number_format($poidsTotal / $nbSevres, 2) : '0.00');
-
-                                // Mettre à jour les totaux
-                                static::updateTotals($set, $get);
-                            })
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
                                     ->tooltip('Nombre réel de porcelets sevrés vivants (peut être inférieur aux nés vivants en cas de mortalité)')
@@ -191,15 +183,6 @@ class SevrerPorteesAction
                             ->minValue(0)
                             ->step(0.01)
                             ->suffix('kg')
-                            ->live(onBlur: true)
-                            ->afterStateUpdated(function ($state, $set, $get) {
-                                $nbSevres = $get('nb_sevres') ?? 0;
-                                $poidsTotal = $state ?? 0;
-                                $set('poids_moyen_kg', $nbSevres > 0 ? number_format($poidsTotal / $nbSevres, 2) : '0.00');
-
-                                // Mettre à jour les totaux
-                                static::updateTotals($set, $get);
-                            })
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
                                     ->tooltip('Poids total de tous les porcelets de cette portée')
@@ -210,12 +193,7 @@ class SevrerPorteesAction
                             ->label('Poids moyen')
                             ->disabled()
                             ->suffix('kg')
-                            ->dehydrated(false)
-                            ->afterStateHydrated(function ($component, $state, $get) {
-                                $nbSevres = $get('nb_sevres') ?? 0;
-                                $poidsTotal = $get('poids_total_kg') ?? 0;
-                                $component->state($nbSevres > 0 ? number_format($poidsTotal / $nbSevres, 2) : '0.00');
-                            }),
+                            ->dehydrated(false),
                     ])
                     ->columns(5)
                     ->reorderable(false)
@@ -226,8 +204,7 @@ class SevrerPorteesAction
                         Icon::make(Heroicon::QuestionMarkCircle)
                             ->tooltip('Saisissez les données de sevrage pour chaque portée sélectionnée')
                             ->color('gray'),
-                    ]))
-                    ->live(),
+                    ])),
 
                 // Totaux récapitulatifs
                 Group::make([
@@ -261,7 +238,7 @@ class SevrerPorteesAction
                 $donneesPortees = $records->map(function (Portee $portee) {
                     return [
                         'portee_id' => $portee->id,
-                        'truie' => $portee->animal->numero_identification,
+                        'truie' => $portee->animal?->numero_identification ?? 'Animal inconnu',
                         'nb_sevres' => $portee->nb_nes_vifs ?? 0,
                         'poids_total_kg' => 0,
                         'poids_moyen_kg' => 0,
@@ -273,6 +250,32 @@ class SevrerPorteesAction
                 ];
             })
             ->action(function (Collection $records, array $data) {
+                // VALIDATION PRÉALABLE : Vérifier que toutes les portées sont valides AVANT de commencer
+                foreach ($data['donnees_portees'] as $donneePortee) {
+                    $portee = Portee::find($donneePortee['portee_id']);
+
+                    if (! $portee) {
+                        Notification::make()
+                            ->danger()
+                            ->title('Erreur')
+                            ->body('Une des portées sélectionnées n\'existe pas.')
+                            ->send();
+
+                        return;
+                    }
+
+                    // Vérifier que la portée n'est pas déjà sevrée
+                    if ($portee->date_sevrage) {
+                        Notification::make()
+                            ->warning()
+                            ->title('Portée déjà sevrée')
+                            ->body("La portée de {$portee->animal->numero_identification} est déjà sevrée le {$portee->date_sevrage->format('d/m/Y')}. Impossible de la sevrer à nouveau.")
+                            ->send();
+
+                        return;
+                    }
+                }
+
                 DB::transaction(function () use ($data) {
                     // 1. Créer ou récupérer le lot
                     $lot = static::getOrCreateLot($data);
@@ -286,21 +289,6 @@ class SevrerPorteesAction
                     // 2. Traiter chaque portée
                     foreach ($data['donnees_portees'] as $donneePortee) {
                         $portee = Portee::find($donneePortee['portee_id']);
-
-                        if (! $portee) {
-                            continue;
-                        }
-
-                        // Vérifier que la portée n'est pas déjà sevrée
-                        if ($portee->date_sevrage) {
-                            Notification::make()
-                                ->warning()
-                                ->title('Portée déjà sevrée')
-                                ->body("La portée de {$portee->animal->numero_identification} est déjà sevrée.")
-                                ->send();
-
-                            continue;
-                        }
 
                         $nbSevres = $donneePortee['nb_sevres'];
                         $poidsTotal = $donneePortee['poids_total_kg'];
@@ -325,14 +313,34 @@ class SevrerPorteesAction
 
                         // Mettre à jour le cycle de reproduction
                         $cycleReproduction = $portee->cycleReproduction;
-                        if ($cycleReproduction && $cycleReproduction->statut_cycle === 'en_cours') {
-                            $cycleReproduction->update([
-                                'statut_cycle' => 'termine_succes',
-                            ]);
+                        $truie = $portee->animal;
+
+                        if (! $cycleReproduction) {
+                            throw new \Exception("Aucun cycle de reproduction trouvé pour cette portée (ID: {$portee->id})");
                         }
 
+                        if ($cycleReproduction->statut_cycle !== 'en_cours') {
+                            throw new \Exception("Le cycle de reproduction #{$cycleReproduction->numero_cycle} n'est pas en cours (statut: {$cycleReproduction->statut_cycle})");
+                        }
+
+                        // Terminer le cycle actuel
+                        $cycleReproduction->update([
+                            'statut_cycle' => 'termine_succes',
+                        ]);
+
+                        // Créer immédiatement le nouveau cycle (au lieu de laisser l'observer le faire)
+                        // Cela garantit que la création se fait dans la même transaction
+                        $numeroCycleNouveau = $cycleReproduction->numero_cycle + 1;
+
+                        CycleReproduction::create([
+                            'animal_id' => $truie->id,
+                            'numero_cycle' => $numeroCycleNouveau,
+                            'date_debut' => $data['date_sevrage'],
+                            'statut_cycle' => 'en_cours',
+                            'resultat_diagnostic' => 'en_attente',
+                        ]);
+
                         // Mettre à jour le statut de la truie
-                        $truie = $portee->animal;
                         if ($truie && $truie->statut_actuel === 'en_lactation') {
                             $truie->update([
                                 'statut_actuel' => 'sevree',
@@ -436,17 +444,43 @@ class SevrerPorteesAction
 
     /**
      * Met à jour les totaux calculés (total porcelets, total poids, poids moyen global)
+     *
+     * Note: Cette fonction est appelée depuis un item du Repeater 'donnees_portees'.
+     * La structure du formulaire est:
+     *   - donnees_portees (Repeater)
+     *     - item 1 (on est ici)
+     *     - item 2
+     *   - total_porcelets_calcule (au même niveau que le repeater)
+     *   - total_poids_calcule
+     *   - poids_moyen_global
+     *
+     * Pour accéder au repeater depuis un item, on utilise '../donnees_portees'
+     * Pour accéder aux totaux depuis un item, on utilise '../total_porcelets_calcule'
      */
     protected static function updateTotals($set, $get): void
     {
-        $donneesPortees = $get('../../donnees_portees') ?? [];
+        try {
+            // Récupérer toutes les données du repeater (remonter d'un niveau)
+            $donneesPortees = $get('../donnees_portees') ?? [];
 
-        $totalPorcelets = collect($donneesPortees)->sum('nb_sevres');
-        $totalPoids = collect($donneesPortees)->sum('poids_total_kg');
-        $poidsMoyenGlobal = $totalPorcelets > 0 ? $totalPoids / $totalPorcelets : 0;
+            // Si le repeater n'est pas encore initialisé, on ne fait rien
+            if (empty($donneesPortees)) {
+                return;
+            }
 
-        $set('../../total_porcelets_calcule', $totalPorcelets);
-        $set('../../total_poids_calcule', number_format($totalPoids, 2));
-        $set('../../poids_moyen_global', number_format($poidsMoyenGlobal, 2));
+            // Calculer les totaux
+            $totalPorcelets = collect($donneesPortees)->sum('nb_sevres');
+            $totalPoids = collect($donneesPortees)->sum('poids_total_kg');
+            $poidsMoyenGlobal = $totalPorcelets > 0 ? $totalPoids / $totalPorcelets : 0;
+
+            // Mettre à jour les champs de totaux (au même niveau que le repeater)
+            $set('../total_porcelets_calcule', $totalPorcelets);
+            $set('../total_poids_calcule', number_format($totalPoids, 2));
+            $set('../poids_moyen_global', number_format($poidsMoyenGlobal, 2));
+        } catch (\Exception $e) {
+            // En cas d'erreur (pendant l'hydratation par exemple), on ne fait rien
+            // Les totaux seront calculés lors de la prochaine mise à jour
+            return;
+        }
     }
 }

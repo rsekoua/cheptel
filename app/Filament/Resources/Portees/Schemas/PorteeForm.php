@@ -157,6 +157,7 @@ class PorteeForm
                         DatePicker::make('date_sevrage')
                             ->label('Date de sevrage')
                             ->native(false)
+                            ->live()
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
                                     ->tooltip('Date du sevrage (généralement 21-28 jours après la mise-bas)')
@@ -209,7 +210,11 @@ class PorteeForm
                             ->searchable()
                             ->preload()
                             ->native(false)
-                            ->helperText('Utilisez cette option si tous les porcelets vont dans le même lot')
+                            ->disabled(fn ($get) => ! $get('date_sevrage'))
+                            ->helperText(fn ($get) => ! $get('date_sevrage')
+                                ? '⚠️ Vous devez d\'abord saisir la date de sevrage ci-dessus'
+                                : 'Utilisez cette option si tous les porcelets vont dans le même lot'
+                            )
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
                                     ->tooltip('Lot de post-sevrage où TOUS les porcelets seront transférés ensemble')
@@ -218,7 +223,10 @@ class PorteeForm
                     ]),
 
                 Section::make('Répartition avancée dans plusieurs lots')
-                    ->description('Si vous répartissez les porcelets dans plusieurs lots (tri par poids, qualité, etc.)')
+                    ->description(fn ($get) => ! $get('date_sevrage')
+                        ? '⚠️ Vous devez d\'abord saisir la date de sevrage ci-dessus'
+                        : 'Si vous répartissez les porcelets dans plusieurs lots (tri par poids, qualité, etc.)'
+                    )
                     ->schema([
                         Repeater::make('lots')
                             ->label('Répartition dans les lots')

@@ -26,9 +26,9 @@ class LotResource extends Resource
 {
     protected static ?string $model = Lot::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleGroup;
+//    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleGroup;
 
-    protected static string|null|\UnitEnum $navigationGroup = 'Production';
+    protected static string|null|\UnitEnum $navigationGroup = 'Reproduction';
 
     protected static ?string $modelLabel = 'Lot';
 

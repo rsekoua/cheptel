@@ -6,6 +6,7 @@ use App\Models\Lot;
 use App\Models\Portee;
 use App\Models\Race;
 use App\Models\User;
+use Filament\Forms\Components\Repeater;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
@@ -13,6 +14,16 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->actingAs(User::factory()->create());
+
+    // Utiliser Repeater::fake() pour éviter les problèmes d'UUID dans les tests
+    $this->undoRepeaterFake = Repeater::fake();
+});
+
+afterEach(function () {
+    // Restaurer le comportement normal du Repeater après chaque test
+    if (isset($this->undoRepeaterFake)) {
+        ($this->undoRepeaterFake)();
+    }
 });
 
 it('can display litters ready for weaning', function () {
@@ -420,9 +431,10 @@ it('ensures lot totals equal sum of all litters', function () {
         ->and($lot->poids_total_actuel_kg)->toEqual($totalPoidsAttendu);
 
     // Poids moyen = total poids / total porcelets
-    $poidsMoyenAttendu = $totalPoidsAttendu / $totalPorceletsAttendu;
-    expect($lot->poids_moyen_depart_kg)->toBeCloseTo($poidsMoyenAttendu, 0.01)
-        ->and($lot->poids_moyen_actuel_kg)->toBeCloseTo($poidsMoyenAttendu, 0.01);
+    $poidsMoyenAttendu = round($totalPoidsAttendu / $totalPorceletsAttendu, 2);
+    // Les poids moyens sont castés en decimal:2 donc retournés comme string, on les arrondit pour la comparaison
+    expect(round((float) $lot->poids_moyen_depart_kg, 2))->toBe($poidsMoyenAttendu)
+        ->and(round((float) $lot->poids_moyen_actuel_kg, 2))->toBe($poidsMoyenAttendu);
 
     // Vérifier également dans la table pivot
     $totalPivot = $lot->portees()
