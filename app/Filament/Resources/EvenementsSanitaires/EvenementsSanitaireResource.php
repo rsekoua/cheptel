@@ -19,6 +19,7 @@ use Filament\Tables\Table;
 class EvenementsSanitaireResource extends Resource
 {
     protected static ?string $model = EvenementsSanitaire::class;
+    protected static bool $shouldRegisterNavigation = false;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

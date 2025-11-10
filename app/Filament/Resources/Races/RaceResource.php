@@ -19,7 +19,7 @@ use Filament\Tables\Table;
 class RaceResource extends Resource
 {
     protected static ?string $model = Race::class;
-
+    protected static bool $shouldRegisterNavigation = false;
     protected static string|BackedEnum|null $navigationIcon = null;
 
     //    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;

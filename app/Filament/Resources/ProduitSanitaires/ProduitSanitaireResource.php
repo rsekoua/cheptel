@@ -18,6 +18,7 @@ use Filament\Tables\Table;
 class ProduitSanitaireResource extends Resource
 {
     protected static ?string $model = ProduitSanitaire::class;
+    protected static bool $shouldRegisterNavigation = false;
 
     protected static string|BackedEnum|null $navigationIcon = null;
 

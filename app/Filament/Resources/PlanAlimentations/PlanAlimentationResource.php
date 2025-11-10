@@ -19,6 +19,7 @@ use Filament\Tables\Table;
 class PlanAlimentationResource extends Resource
 {
     protected static ?string $model = PlanAlimentation::class;
+    protected static bool $shouldRegisterNavigation = false;
 
     //    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
     protected static string|null|\UnitEnum $navigationGroup = 'Parametres';

@@ -19,6 +19,7 @@ use Filament\Tables\Table;
 class TacheResource extends Resource
 {
     protected static ?string $model = Tache::class;
+    protected static bool $shouldRegisterNavigation = false;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
