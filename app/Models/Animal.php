@@ -19,19 +19,13 @@ class Animal extends Model
         'numero_identification',
         'type_animal',
         'race_id',
-        'sexe',
         'date_naissance',
         'date_entree',
         'origine',
         'numero_mere',
         'numero_pere',
+        'provenance',
         'statut_actuel',
-        'salle_id',
-        'place_numero',
-        'poids_actuel_kg',
-        'date_derniere_pesee',
-        'plan_alimentation_id',
-        'bande',
         'date_reforme',
         'motif_reforme',
         'notes',
@@ -42,8 +36,6 @@ class Animal extends Model
         return [
             'date_naissance' => 'date',
             'date_entree' => 'date',
-            'poids_actuel_kg' => 'decimal:2',
-            'date_derniere_pesee' => 'date',
             'date_reforme' => 'date',
         ];
     }
@@ -51,16 +43,6 @@ class Animal extends Model
     public function race(): BelongsTo
     {
         return $this->belongsTo(Race::class);
-    }
-
-    public function salle(): BelongsTo
-    {
-        return $this->belongsTo(Salle::class);
-    }
-
-    public function planAlimentation(): BelongsTo
-    {
-        return $this->belongsTo(PlanAlimentation::class);
     }
 
     public function cyclesReproduction(): HasMany
@@ -108,11 +90,6 @@ class Animal extends Model
         $query->where('type_animal', 'truie');
     }
 
-    public function scopeCochettes(Builder $query): void
-    {
-        $query->where('type_animal', 'cochette');
-    }
-
     public function scopeVerrats(Builder $query): void
     {
         $query->where('type_animal', 'verrat');
@@ -120,7 +97,7 @@ class Animal extends Model
 
     public function scopeGestantes(Builder $query): void
     {
-        $query->whereIn('statut_actuel', ['gestante_attente', 'gestante_confirmee']);
+        $query->where('statut_actuel', 'gestante');
     }
 
     public function scopeEnLactation(Builder $query): void
@@ -130,12 +107,12 @@ class Animal extends Model
 
     public function scopeActifs(Builder $query): void
     {
-        $query->whereNotIn('statut_actuel', ['reforme', 'retraite']);
+        $query->where('statut_actuel', 'active');
     }
 
-    public function scopeBande(Builder $query, string $bande): void
+    public function scopeSevrees(Builder $query): void
     {
-        $query->where('bande', $bande);
+        $query->where('statut_actuel', 'sevree');
     }
 
     public function age(): int

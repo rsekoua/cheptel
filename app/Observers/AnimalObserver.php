@@ -37,7 +37,7 @@ class AnimalObserver
         // Conditions pour créer un nouveau cycle de reproduction
         $doitCreerCycle = match ($nouveauStatut) {
             // Truie/Cochette vient de sevrer sa portée
-            'sevree' => in_array($animal->type_animal, ['truie', 'cochette']),
+            'sevree' => in_array($animal->type_animal, ['truie']),
             // Cochette a ses premières chaleurs OU truie revient en chaleurs après échec
             'en_chaleurs' => $this->doitCreerCyclePourChaleurs($animal),
             default => false,

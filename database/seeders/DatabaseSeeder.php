@@ -23,8 +23,8 @@ class DatabaseSeeder extends Seeder
     {
         // Créer un utilisateur de test
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'rsekoua@local.host',
+            'name' => 'Admin User',
+            'email' => 'admin@local.host',
             'password' => hash::make('password'),
         ]);
 
@@ -40,22 +40,15 @@ class DatabaseSeeder extends Seeder
         // Créer des animaux (truies, cochettes, verrats)
         $truies = Animal::factory(3)->create([
             'type_animal' => 'truie',
-            'sexe' => 'F',
+            //   'sexe' => 'F',
             'race_id' => fn () => $races->random()->id,
             // 'statut_actuel' => 'gestante_confirmee',
-        ]);
-
-        $cochettes = Animal::factory(1)->create([
-            'type_animal' => 'cochette',
-            'sexe' => 'F',
-            'race_id' => fn () => $races->random()->id,
-            'statut_actuel' => 'en_chaleurs',
         ]);
 
         $verrats = Animal::factory(2)->create([
             'type_animal' => 'verrat',
             'race_id' => fn () => $races->random()->id,
-            'sexe' => 'M',
+            //  'sexe' => 'M',
             'statut_actuel' => 'active',
         ]);
 

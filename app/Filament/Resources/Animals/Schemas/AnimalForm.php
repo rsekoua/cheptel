@@ -9,6 +9,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Schemas\Components\Icon;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 
@@ -17,43 +18,43 @@ class AnimalForm
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->columns(2)
             ->components([
-                Section::make('Identification')
-                    ->description('Informations d\'identification de l\'animal')
+                Section::make('Informations générales')
+                    ->description('Identification et caractéristiques de l\'animal')
+                    ->icon(Heroicon::Identification)
+                    ->columns(2)
                     ->schema([
                         TextInput::make('numero_identification')
                             ->label('Numéro d\'identification')
+                            ->placeholder('Ex: FR123456789')
                             ->required()
                             ->maxLength(50)
+                            ->unique(ignoreRecord: true)
+                            //->columnSpanFull()
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Numéro unique d\'identification de l\'animal (ex: FR123456789)')
+                                    ->tooltip('Numéro unique d\'identification de l\'animal')
                                     ->color('gray'),
                             ])),
 
-                        //                        Select::make('type_animal')
                         ToggleButtons::make('type_animal')
                             ->label('Type d\'animal')
                             ->required()
                             ->options([
                                 'truie' => 'Truie',
-                                'cochette' => 'Cochette',
                                 'verrat' => 'Verrat',
                             ])
-                           // ->native(false)
+                            ->icons([
+                                'truie' => Heroicon::UserCircle,
+                                'verrat' => Heroicon::UserCircle,
+                            ])
                             ->live()
                             ->inline()
-                            ->afterStateUpdated(function ($state, $set) {
-                                // Définir automatiquement le sexe en fonction du type
-                                if (in_array($state, ['truie', 'cochette'])) {
-                                    $set('sexe', 'F');
-                                } elseif ($state === 'verrat') {
-                                    $set('sexe', 'M');
-                                }
-                            })
+                           //->columnSpanFull()
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Truie = femelle reproductrice ayant déjà mis bas. Cochette = jeune femelle reproductrice (pas encore mis bas). Verrat = mâle reproducteur')
+                                    ->tooltip('Truie = femelle reproductrice. Verrat = mâle reproducteur')
                                     ->color('gray'),
                             ])),
 
@@ -62,33 +63,82 @@ class AnimalForm
                             ->relationship('race', 'nom')
                             ->native(false)
                             ->required()
+                            ->searchable()
+                            ->preload()
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
                                     ->tooltip('Race génétique de l\'animal')
                                     ->color('gray'),
                             ])),
 
-                        Select::make('sexe')
-                            ->label('Sexe')
+                        ToggleButtons::make('statut_actuel')
+                            ->label('Statut actuel')
                             ->required()
+                            ->inline()
                             ->options([
-                                'F' => 'Femelle',
-                                'M' => 'Mâle',
-                            ])
-                            ->native(false)
-                            ->disabled(fn ($get) => in_array($get('type_animal'), ['truie', 'cochette', 'verrat']))
-                            ->dehydrated()
+                                'active' => 'Active',
+                                'sevree' => 'Sevrée',
+                                'gestante' => 'Gestante',
+                                'en_lactation' => 'En lactation',
+                                'reforme' => 'Réformée',
+                            ])->columnSpanFull()
+                            //->native(false)
+                            ->default('active')
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Sexe biologique de l\'animal (rempli automatiquement selon le type)')
+                                    ->tooltip('Statut actuel de l\'animal dans l\'élevage')
                                     ->color('gray'),
                             ])),
-                    ])
-                    ->columns(2),
+
+//                        Select::make('statut_actuel')
+//                            ->label('Statut actuel')
+//                            ->required()
+//                            ->options([
+//                                'active' => 'Active',
+//                                'sevree' => 'Sevrée',
+//                                'gestante' => 'Gestante',
+//                                'en_lactation' => 'En lactation',
+//                                'reforme' => 'Réformée',
+//                            ])
+//                            ->native(false)
+//                            ->default('active')
+//                            ->afterLabel(Schema::start([
+//                                Icon::make(Heroicon::QuestionMarkCircle)
+//                                    ->tooltip('Statut actuel de l\'animal dans l\'élevage')
+//                                    ->color('gray'),
+//                            ])),
+                    ]),
+                // ->columns(2)
+                // ->columnSpan(2),
 
                 Section::make('Origine et généalogie')
-                    ->description('Informations sur la naissance et les parents')
+                    ->description('Provenance et parents de l\'animal')
+                    ->icon(Heroicon::MapPin)
                     ->schema([
+                        DatePicker::make('date_naissance')
+                            ->label('Date de naissance')
+                            ->native(false)
+                            ->maxDate(now())
+                            ->live()
+                            ->afterLabel(Schema::start([
+                                Icon::make(Heroicon::QuestionMarkCircle)
+                                    ->tooltip('Date de naissance de l\'animal')
+                                    ->color('gray'),
+                            ])),
+
+                        DatePicker::make('date_entree')
+                            ->label('Date d\'entrée')
+                            ->required()
+                            ->native(false)
+                            ->minDate(fn (Get $get): ?string => $get('date_naissance'))
+                            ->maxDate(now())
+                            ->afterOrEqual('date_naissance')
+                            ->helperText('La date d\'entrée doit être postérieure ou égale à la date de naissance')
+                            ->afterLabel(Schema::start([
+                                Icon::make(Heroicon::QuestionMarkCircle)
+                                    ->tooltip('Date d\'entrée de l\'animal dans l\'élevage')
+                                    ->color('gray'),
+                            ])),
                         Select::make('origine')
                             ->label('Origine')
                             ->options([
@@ -97,186 +147,93 @@ class AnimalForm
                             ])
                             ->required()
                             ->native(false)
+                            ->live()
+                            ->columnSpanFull()
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Provenance de l\'animal (naissance dans l\'élevage ou achat externe)')
+                                    ->tooltip('Provenance de l\'animal')
                                     ->color('gray'),
                             ])),
 
-                        DatePicker::make('date_naissance')
-                            ->label('Date de naissance')
-                            ->required()
-                            ->native(false)
+                        TextInput::make('provenance')
+                            ->label('Provenance externe')
+                            ->placeholder('Ex: Élevage Dupont, Fournisseur XYZ')
+                            ->maxLength(50)
+                            ->visible(fn (Get $get): bool => $get('origine') === 'achat_externe')
+                            ->required(fn (Get $get): bool => $get('origine') === 'achat_externe')
+                            ->columnSpanFull()
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Date de naissance de l\'animal')
+                                    ->tooltip('Nom de l\'élevage ou du fournisseur')
                                     ->color('gray'),
                             ])),
 
                         TextInput::make('numero_mere')
                             ->label('Numéro de la mère')
+                            ->placeholder('Ex: FR987654321')
                             ->maxLength(50)
+                            ->visible(fn (Get $get): bool => $get('origine') === 'naissance_elevage')
+                            ->required(fn (Get $get): bool => $get('origine') === 'naissance_elevage')
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Numéro d\'identification de la mère (si connu)')
+                                    ->tooltip('Numéro d\'identification de la mère')
                                     ->color('gray'),
                             ])),
 
                         TextInput::make('numero_pere')
                             ->label('Numéro du père')
+                            ->placeholder('Ex: FR123789456')
                             ->maxLength(50)
+                            ->visible(fn (Get $get): bool => $get('origine') === 'naissance_elevage')
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Numéro d\'identification du père (si connu)')
+                                    ->tooltip('Numéro d\'identification du père')
                                     ->color('gray'),
                             ])),
                     ])
                     ->columns(2),
-
-                Section::make('Gestion d\'élevage')
-                    ->description('Informations sur l\'entrée et la gestion')
-                    ->schema([
-                        DatePicker::make('date_entree')
-                            ->label('Date d\'entrée')
-                            ->required()
-                            ->native(false)
-                            ->afterLabel(Schema::start([
-                                Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Date d\'entrée de l\'animal dans l\'élevage')
-                                    ->color('gray'),
-                            ])),
-
-                        TextInput::make('bande')
-                            ->label('Bande')
-                            ->maxLength(50)
-                            ->afterLabel(Schema::start([
-                                Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Numéro ou identifiant de la bande/groupe de production')
-                                    ->color('gray'),
-                            ])),
-
-                        Select::make('statut_actuel')
-                            ->label('Statut actuel')
-                            ->required()
-                            ->options([
-                                'sevree' => 'Sevrée',
-                                'en_chaleurs' => 'En chaleurs',
-                                'gestante_attente' => 'Gestante (en attente confirmation)',
-                                'gestante_confirmee' => 'Gestante (confirmée)',
-                                'en_lactation' => 'En lactation',
-                                'reforme' => 'Réformée',
-                                'active' => 'Active',
-                                'retraite' => 'Retraite',
-                            ])
-                            ->native(false)
-                            ->afterLabel(Schema::start([
-                                Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Statut actuel de l\'animal dans l\'élevage')
-                                    ->color('gray'),
-                            ])),
-                    ])
-                    ->columns(3),
-
-                Section::make('Localisation')
-                    ->description('Emplacement actuel de l\'animal')
-                    ->schema([
-                        Select::make('salle_id')
-                            ->label('Salle')
-                            ->relationship('salle', 'nom')
-                            ->native(false)
-                            ->afterLabel(Schema::start([
-                                Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Salle/bâtiment où se trouve actuellement l\'animal')
-                                    ->color('gray'),
-                            ])),
-
-                        TextInput::make('place_numero')
-                            ->label('Numéro de place')
-                            ->maxLength(20)
-                            ->afterLabel(Schema::start([
-                                Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Numéro de la case ou de la place spécifique dans la salle')
-                                    ->color('gray'),
-                            ])),
-                    ])
-                    ->columns(2),
-
-                Section::make('Suivi pondéral')
-                    ->description('Suivi du poids de l\'animal')
-                    ->schema([
-                        TextInput::make('poids_actuel_kg')
-                            ->label('Poids actuel (kg)')
-                            ->numeric()
-                            ->suffix('kg')
-                            ->afterLabel(Schema::start([
-                                Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Dernier poids enregistré de l\'animal en kilogrammes')
-                                    ->color('gray'),
-                            ])),
-
-                        DatePicker::make('date_derniere_pesee')
-                            ->label('Date de dernière pesée')
-                            ->native(false)
-                            ->afterLabel(Schema::start([
-                                Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Date de la dernière pesée de l\'animal')
-                                    ->color('gray'),
-                            ])),
-                    ])
-                    ->columns(2),
-
-                Section::make('Alimentation')
-                    ->description('Plan alimentaire de l\'animal')
-                    ->schema([
-                        Select::make('plan_alimentation_id')
-                            ->label('Plan d\'alimentation')
-                            ->relationship('planAlimentation', 'nom')
-                            ->native(false)
-                            ->afterLabel(Schema::start([
-                                Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Plan d\'alimentation assigné à l\'animal selon son stade physiologique')
-                                    ->color('gray'),
-                            ])),
-                    ]),
+                // ->columnSpan(2),
 
                 Section::make('Réforme')
-                    ->description('Informations sur la réforme de l\'animal')
+                    ->description('Informations sur la sortie de l\'animal')
+                    ->icon(Heroicon::ArchiveBox)
                     ->schema([
                         DatePicker::make('date_reforme')
                             ->label('Date de réforme')
                             ->native(false)
+                            ->maxDate(now())
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Date à laquelle l\'animal a été réformé (retiré de la reproduction)')
+                                    ->tooltip('Date à laquelle l\'animal a été réformé')
                                     ->color('gray'),
                             ])),
 
                         Textarea::make('motif_reforme')
                             ->label('Motif de réforme')
+                            ->placeholder('Ex: Âge avancé, problèmes de reproduction, santé...')
                             ->rows(3)
                             ->columnSpanFull()
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Raison de la réforme (ex: âge, problèmes de reproduction, santé, performances insuffisantes)')
+                                    ->tooltip('Raison de la réforme')
                                     ->color('gray'),
                             ])),
                     ])
                     ->columns(2)
+                   // ->columnSpan(2)
                     ->collapsed(),
 
                 Section::make('Notes additionnelles')
-                    ->description('Informations complémentaires')
+                    ->description('Observations et informations complémentaires')
+                    ->icon(Heroicon::DocumentText)
                     ->schema([
                         Textarea::make('notes')
                             ->label('Notes')
+                            ->placeholder('Observations, comportements particuliers, informations importantes...')
                             ->rows(4)
-                            ->columnSpanFull()
-                            ->afterLabel(Schema::start([
-                                Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Observations ou informations complémentaires sur l\'animal')
-                                    ->color('gray'),
-                            ])),
+                            ->columnSpanFull(),
                     ])
+                  //  ->columnSpan(2)
                     ->collapsed(),
             ]);
     }

@@ -8,6 +8,7 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
@@ -21,38 +22,32 @@ class AnimalsTable
                 TextColumn::make('numero_identification')
                     ->searchable(),
                 TextColumn::make('type_animal')
+                    ->icon(Heroicon::Briefcase)
+                    ->iconColor('info')
+                    ->searchable()
+                    ->sortable()
                     ->searchable(),
-                TextColumn::make('race.id')
-                    ->searchable(),
-                TextColumn::make('sexe')
+                TextColumn::make('race.nom')
+                    ->label('Race')
                     ->searchable(),
                 TextColumn::make('date_naissance')
                     ->date()
+                    ->icon(Heroicon::Calendar)
                     ->sortable(),
                 TextColumn::make('date_entree')
                     ->date()
                     ->sortable(),
                 TextColumn::make('origine')
                     ->searchable(),
+                TextColumn::make('provenance')
+                    ->searchable(),
                 TextColumn::make('numero_mere')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 TextColumn::make('numero_pere')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
                 TextColumn::make('statut_actuel')
-                    ->searchable(),
-                TextColumn::make('salle.id')
-                    ->searchable(),
-                TextColumn::make('place_numero')
-                    ->searchable(),
-                TextColumn::make('poids_actuel_kg')
-                    ->numeric()
-                    ->sortable(),
-                TextColumn::make('date_derniere_pesee')
-                    ->date()
-                    ->sortable(),
-                TextColumn::make('planAlimentation.id')
-                    ->searchable(),
-                TextColumn::make('bande')
                     ->searchable(),
                 TextColumn::make('date_reforme')
                     ->date()

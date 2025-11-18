@@ -16,33 +16,18 @@ class AnimalInfolist
                 TextEntry::make('type_animal'),
                 TextEntry::make('race.id')
                     ->label('Race'),
-                TextEntry::make('sexe'),
                 TextEntry::make('date_naissance')
                     ->date(),
                 TextEntry::make('date_entree')
                     ->date(),
                 TextEntry::make('origine'),
+                TextEntry::make('provenance')
+                    ->placeholder('-'),
                 TextEntry::make('numero_mere')
                     ->placeholder('-'),
                 TextEntry::make('numero_pere')
                     ->placeholder('-'),
                 TextEntry::make('statut_actuel'),
-                TextEntry::make('salle.id')
-                    ->label('Salle')
-                    ->placeholder('-'),
-                TextEntry::make('place_numero')
-                    ->placeholder('-'),
-                TextEntry::make('poids_actuel_kg')
-                    ->numeric()
-                    ->placeholder('-'),
-                TextEntry::make('date_derniere_pesee')
-                    ->date()
-                    ->placeholder('-'),
-                TextEntry::make('planAlimentation.id')
-                    ->label('Plan alimentation')
-                    ->placeholder('-'),
-                TextEntry::make('bande')
-                    ->placeholder('-'),
                 TextEntry::make('date_reforme')
                     ->date()
                     ->placeholder('-'),
