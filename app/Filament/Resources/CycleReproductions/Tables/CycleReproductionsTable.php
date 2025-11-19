@@ -47,26 +47,26 @@ class CycleReproductionsTable
                     })
                     ->sortable(),
 
-                TextColumn::make('date_premiere_saillie')
-                    ->label('1ère saillie')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
-                    ->placeholder('-'),
-
-                TextColumn::make('type_saillie')
-                    ->label('Type')
-                    ->badge()
-                    ->formatStateUsing(fn (?string $state): string => match ($state) {
-                        'IA' => 'Insémination Artificielle',
-                        'MN' => 'Monte Naturelle',
-                        default => '-',
-                    })
-                    ->color(fn (?string $state): string => match ($state) {
-                        'IA' => 'info',
-                        'MN' => 'success',
-                        default => 'gray',
-                    })
-                    ->placeholder('-'),
+//                TextColumn::make('date_premiere_saillie')
+//                    ->label('1ère saillie')
+//                    ->dateTime('d/m/Y H:i')
+//                    ->sortable()
+//                    ->placeholder('-'),
+//
+//                TextColumn::make('type_saillie')
+//                    ->label('Type')
+//                    ->badge()
+//                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+//                        'IA' => 'Insémination Artificielle',
+//                        'MN' => 'Monte Naturelle',
+//                        default => '-',
+//                    })
+//                    ->color(fn (?string $state): string => match ($state) {
+//                        'IA' => 'info',
+//                        'MN' => 'success',
+//                        default => 'gray',
+//                    })
+//                    ->placeholder('-'),
 
                 TextColumn::make('saillies_count')
                     ->label('Nb saillies')

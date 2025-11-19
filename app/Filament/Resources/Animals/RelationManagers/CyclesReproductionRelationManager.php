@@ -17,7 +17,21 @@ class CyclesReproductionRelationManager extends RelationManager
     {
         return $table
             ->headerActions([
-                CreateAction::make(),
+                CreateAction::make()
+                    ->visible(function (): bool {
+                        // Masquer le bouton si un cycle actif existe déjà
+                        return ! $this->ownerRecord->cyclesReproduction()
+                            ->whereNotIn('statut_cycle', ['termine_succes', 'termine_echec'])
+                            ->exists();
+                    }),
             ]);
+    }
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        // Pré-remplir l'animal_id avec l'animal propriétaire du RelationManager
+        $data['animal_id'] = $this->ownerRecord->id;
+
+        return $data;
     }
 }

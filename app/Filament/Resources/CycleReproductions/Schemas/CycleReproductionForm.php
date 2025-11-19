@@ -27,15 +27,29 @@ class CycleReproductionForm
                     ->schema([
                         Select::make('animal_id')
                             ->label('Animal')
-                            ->relationship('animal', 'numero_identification')
+                            ->relationship(
+                                name: 'animal',
+                                titleAttribute: 'numero_identification',
+                                modifyQueryUsing: function ($query, $record) {
+                                    // Si on est en édition, ne pas filtrer (afficher l'animal actuel)
+                                    if ($record) {
+                                        return $query;
+                                    }
+
+                                    // Filtrer pour afficher uniquement les animaux sans cycle actif
+                                    return $query->whereDoesntHave('cyclesReproduction', function ($query) {
+                                        $query->whereNotIn('statut_cycle', ['termine_succes', 'termine_echec']);
+                                    });
+                                }
+                            )
                             ->searchable()
                             ->preload()
-//                            ->disabled()
+                            ->disabled(fn ($record, $get) => $record !== null || filled($get('animal_id')))
                             ->dehydrated()
                             ->required()
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Animal concerné par ce cycle (généré automatiquement)')
+                                    ->tooltip('Animal concerné par ce cycle')
                                     ->color('gray'),
                             ])),
 
@@ -43,8 +57,9 @@ class CycleReproductionForm
                             ->label('Numéro de cycle')
                             ->numeric()
                             ->required()
-//                            ->disabled()
+                            ->disabled()
                             ->dehydrated()
+                            ->default(1)
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
                                     ->tooltip('Numéro séquentiel calculé automatiquement')
@@ -83,8 +98,8 @@ class CycleReproductionForm
                                     ->color('gray'),
                             ])),
                     ])
-                    ->columns(2)
-                    ->columnSpan(2),
+                    ->columns(2),
+                // ->columnSpan(2),
 
                 Section::make('Saillies / Inséminations')
                     ->description('Enregistrement des multiples inséminations ou saillies (recommandé : 2-3 inséminations à 12-24h d\'intervalle)')
@@ -260,8 +275,8 @@ class CycleReproductionForm
                             ])
                             ->hidden()
                             ->dehydrated(),
-                    ])
-                    ->columnSpan(2),
+                    ]),
+                // ->columnSpan(2),
 
                 Section::make('Diagnostic de gestation')
                     ->description('Résultats du diagnostic de gestation')
@@ -271,7 +286,13 @@ class CycleReproductionForm
                             ->label('Date du diagnostic')
                             ->native(false)
                             ->maxDate(now())
-                            ->minDate(fn (Get $get): ?string => $get('date_premiere_saillie'))
+                            ->minDate(function ($record) {
+                                if ($record && $record->saillies()->exists()) {
+                                    return $record->saillies()->orderBy('date_heure')->first()->date_heure->format('Y-m-d');
+                                }
+
+                                return null;
+                            })
                             ->helperText('Doit être après la première saillie')
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
@@ -288,6 +309,15 @@ class CycleReproductionForm
                             ])
                             ->default('positif')
                             ->native(false)
+                            ->live()
+                            ->afterStateUpdated(function ($state, $set) {
+                                // Mise à jour automatique du statut selon le résultat du diagnostic
+                                if ($state === 'positif') {
+                                    $set('statut_cycle', 'gestation_en_cours');
+                                } elseif ($state === 'negatif') {
+                                    $set('statut_cycle', 'termine_echec');
+                                }
+                            })
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
                                     ->tooltip('Résultat du diagnostic de gestation')
@@ -295,8 +325,11 @@ class CycleReproductionForm
                             ])),
                     ])
                     ->columns(2)
-                    ->columnSpan(2)
-                    ->visible(fn (Get $get, $record): bool => ! empty($get('date_premiere_saillie')) || ($record && ! empty($record->date_premiere_saillie))),
+                    // ->columnSpan(2)
+                    ->visible(function ($record): bool {
+                        // Visible seulement en mode édition ET s'il existe au moins une saillie enregistrée
+                        return $record !== null && $record->saillies()->exists();
+                    }),
 
                 Section::make('Mise-bas')
                     ->description('Dates prévisionnelle et réelle de mise-bas')
@@ -325,7 +358,7 @@ class CycleReproductionForm
                             ])),
                     ])
                     ->columns(2)
-                    ->columnSpan(2)
+                    ->columnSpan(1)
                     ->visible(fn (Get $get, $record): bool => ! empty($get('date_premiere_saillie')) || ($record && ! empty($record->date_premiere_saillie))),
 
                 Section::make('Informations complémentaires')

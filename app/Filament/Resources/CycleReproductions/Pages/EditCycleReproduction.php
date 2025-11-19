@@ -18,4 +18,16 @@ class EditCycleReproduction extends EditRecord
             DeleteAction::make(),
         ];
     }
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        // Mettre à jour date_premiere_saillie basé sur les saillies existantes
+        $premiereSaillie = $this->record->saillies()->orderBy('date_heure')->first();
+
+        if ($premiereSaillie) {
+            $data['date_premiere_saillie'] = $premiereSaillie->date_heure;
+        }
+
+        return $data;
+    }
 }
