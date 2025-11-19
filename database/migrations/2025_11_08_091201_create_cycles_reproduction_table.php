@@ -16,14 +16,18 @@ return new class extends Migration
             $table->foreignId('animal_id')->constrained('animaux')->cascadeOnDelete();
             $table->integer('numero_cycle');
             $table->date('date_debut');
-            $table->datetime('date_chaleurs')->nullable();
+
+            $table->enum('statut_cycle', ['en_attente', 'gestation_en_cours', 'en_lactation', 'termine_succes', 'termine_echec'])->default('en_attente');
+
             $table->datetime('date_premiere_saillie')->nullable();
             $table->enum('type_saillie', ['IA', 'MN'])->nullable()->comment('IA=Insémination Artificielle, MN=Monte Naturelle');
+
             $table->date('date_diagnostic')->nullable();
             $table->enum('resultat_diagnostic', ['positif', 'negatif', 'en_attente'])->default('en_attente');
+
             $table->date('date_mise_bas_prevue')->nullable();
             $table->date('date_mise_bas_reelle')->nullable();
-            $table->enum('statut_cycle', ['en_cours', 'termine_succes', 'termine_echec', 'avorte'])->default('en_cours');
+
             $table->text('motif_echec')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();

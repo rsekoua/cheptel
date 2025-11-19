@@ -51,11 +51,11 @@ class AnimalResource extends Resource
     {
         return [
             CyclesReproductionRelationManager::class,
-            PorteesRelationManager::class,
-            PeseesRelationManager::class,
-            EvenementsSanitairesRelationManager::class,
-            MouvementsRelationManager::class,
-            TachesRelationManager::class,
+            //            PorteesRelationManager::class,
+            //            PeseesRelationManager::class,
+            //            EvenementsSanitairesRelationManager::class,
+            //            MouvementsRelationManager::class,
+            //            TachesRelationManager::class,
         ];
     }
 

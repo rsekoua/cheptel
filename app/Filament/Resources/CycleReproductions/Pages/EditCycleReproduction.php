@@ -4,6 +4,7 @@ namespace App\Filament\Resources\CycleReproductions\Pages;
 
 use App\Filament\Resources\CycleReproductions\CycleReproductionResource;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\ViewAction;
 use Filament\Resources\Pages\EditRecord;
 
 class EditCycleReproduction extends EditRecord
@@ -13,6 +14,7 @@ class EditCycleReproduction extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            ViewAction::make(),
             DeleteAction::make(),
         ];
     }

@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\CycleReproductions\Schemas;
 
-use App\Rules\DateDiagnosticAfterSaillieRule;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Repeater;
@@ -11,6 +10,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Icon;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 
@@ -19,17 +19,20 @@ class CycleReproductionForm
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->columns(2)
             ->components([
-                Section::make('Informations générales')
-                    ->description('Les cycles sont créés automatiquement quand l\'animal passe au statut "Sevrée" ou "En chaleurs"')
+                Section::make('Informations du cycle')
+                    ->description('Informations générales sur le cycle de reproduction')
+                    ->icon(Heroicon::ArrowPath)
                     ->schema([
                         Select::make('animal_id')
                             ->label('Animal')
                             ->relationship('animal', 'numero_identification')
                             ->searchable()
                             ->preload()
-                            ->disabled()
+//                            ->disabled()
                             ->dehydrated()
+                            ->required()
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
                                     ->tooltip('Animal concerné par ce cycle (généré automatiquement)')
@@ -39,23 +42,25 @@ class CycleReproductionForm
                         TextInput::make('numero_cycle')
                             ->label('Numéro de cycle')
                             ->numeric()
-                            ->disabled()
+                            ->required()
+//                            ->disabled()
                             ->dehydrated()
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Numéro séquentiel calculé automatiquement (1 = premier cycle, 2 = deuxième, etc.)')
+                                    ->tooltip('Numéro séquentiel calculé automatiquement')
                                     ->color('gray'),
                             ])),
 
                         DatePicker::make('date_debut')
-                            ->label('Date de début')
+                            ->label('Date de début du cycle')
                             ->required()
                             ->native(false)
                             ->default(now())
-                            ->helperText('Générée automatiquement, mais modifiable pour les enregistrements différés')
+                            ->maxDate(now())
+                            ->helperText('Générée automatiquement, mais modifiable')
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Date de début du cycle (générée automatiquement, modifiable pour enregistrements différés)')
+                                    ->tooltip('Date de début du cycle de reproduction')
                                     ->color('gray'),
                             ])),
 
@@ -63,52 +68,54 @@ class CycleReproductionForm
                             ->label('Statut du cycle')
                             ->required()
                             ->options([
-                                'en_cours' => 'En cours',
-                                'termine_succes' => 'Terminé avec succès',
-                                'termine_echec' => 'Terminé en échec',
-                                'avorte' => 'Avorté',
+                                'en_attente' => 'En attente',
+                                'gestation_en_cours' => 'Gestation en cours',
+                                'en_lactation' => 'En lacation',
+                                'termine_succes' => 'Terminé avec succes',
+                                'termine_echec' => 'Terminé avec echec',
                             ])
-                            ->default('en_cours')
+                            ->default('en_attente')
                             ->native(false)
+                            ->live()
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
                                     ->tooltip('Statut actuel du cycle de reproduction')
                                     ->color('gray'),
                             ])),
-                        DateTimePicker::make('date_chaleurs')
-                            ->label('Date des chaleurs')
-                            ->native(false)
-                            ->seconds(false)
-                            ->afterLabel(Schema::start([
-                                Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Date et heure d\'observation des chaleurs de l\'animal')
-                                    ->color('gray'),
-                            ])),
                     ])
-                    ->columns(2),
+                    ->columns(2)
+                    ->columnSpan(2),
 
                 Section::make('Saillies / Inséminations')
                     ->description('Enregistrement des multiples inséminations ou saillies (recommandé : 2-3 inséminations à 12-24h d\'intervalle)')
+                    ->icon(Heroicon::Heart)
                     ->schema([
                         Repeater::make('saillies')
                             ->label('Liste des saillies')
                             ->relationship()
                             ->live()
                             ->afterStateUpdated(function ($state, $set) {
-                                // Recalculer la date de mise-bas prévue quand les saillies changent
-                                // (notamment quand une saillie est supprimée)
                                 $saillies = $state ?? [];
                                 $dates = array_filter(array_column($saillies, 'date_heure'));
 
                                 if (! empty($dates)) {
-                                    // Il y a au moins une saillie avec une date
                                     $premiereDate = min($dates);
                                     $dateSaillie = \Carbon\Carbon::parse($premiereDate);
                                     $dateMiseBasPrevue = $dateSaillie->copy()->addDays(114);
                                     $set('../date_mise_bas_prevue', $dateMiseBasPrevue->format('Y-m-d'));
+                                    $set('../date_premiere_saillie', $premiereDate);
+
+                                    // Détecter le type de saillie le plus utilisé
+                                    $types = array_filter(array_column($saillies, 'type'));
+                                    if (! empty($types)) {
+                                        $typePrincipal = array_count_values($types);
+                                        arsort($typePrincipal);
+                                        $set('../type_saillie', array_key_first($typePrincipal));
+                                    }
                                 } else {
-                                    // Aucune saillie avec date, vider la date de mise-bas prévue
                                     $set('../date_mise_bas_prevue', null);
+                                    $set('../date_premiere_saillie', null);
+                                    $set('../type_saillie', null);
                                 }
                             })
                             ->schema([
@@ -124,7 +131,7 @@ class CycleReproductionForm
                                     ->live()
                                     ->afterLabel(Schema::start([
                                         Icon::make(Heroicon::QuestionMarkCircle)
-                                            ->tooltip('IA = Insémination Artificielle, MN = Monte Naturelle (avec verrat)')
+                                            ->tooltip('IA = Insémination Artificielle, MN = Monte Naturelle')
                                             ->color('gray'),
                                     ])),
 
@@ -133,24 +140,30 @@ class CycleReproductionForm
                                     ->required()
                                     ->native(false)
                                     ->seconds(false)
-                                    // ->default(now())
+                                    ->maxDate(now())
                                     ->live()
                                     ->afterStateUpdated(function ($state, $set, $get) {
-                                        // Calculer la date de mise-bas prévue basée sur la PREMIÈRE saillie
                                         $saillies = $get('../../saillies') ?? [];
-
-                                        // Trouver la date de saillie la plus ancienne
                                         $dates = array_filter(array_column($saillies, 'date_heure'));
 
                                         if (! empty($dates)) {
-                                            // Il y a au moins une saillie avec une date
                                             $premiereDate = min($dates);
                                             $dateSaillie = \Carbon\Carbon::parse($premiereDate);
                                             $dateMiseBasPrevue = $dateSaillie->copy()->addDays(114);
                                             $set('../../date_mise_bas_prevue', $dateMiseBasPrevue->format('Y-m-d'));
+                                            $set('../../date_premiere_saillie', $premiereDate);
+
+                                            // Détecter le type de saillie le plus utilisé
+                                            $types = array_filter(array_column($saillies, 'type'));
+                                            if (! empty($types)) {
+                                                $typePrincipal = array_count_values($types);
+                                                arsort($typePrincipal);
+                                                $set('../../type_saillie', array_key_first($typePrincipal));
+                                            }
                                         } else {
-                                            // Aucune saillie avec date, vider la date de mise-bas prévue
                                             $set('../../date_mise_bas_prevue', null);
+                                            $set('../../date_premiere_saillie', null);
+                                            $set('../../type_saillie', null);
                                         }
                                     })
                                     ->afterLabel(Schema::start([
@@ -167,10 +180,11 @@ class CycleReproductionForm
                                     })
                                     ->searchable()
                                     ->preload()
+                                    ->native(false)
                                     ->visible(fn ($get) => $get('type') === 'MN')
                                     ->afterLabel(Schema::start([
                                         Icon::make(Heroicon::QuestionMarkCircle)
-                                            ->tooltip('Verrat utilisé pour la monte naturelle (seulement pour MN)')
+                                            ->tooltip('Verrat utilisé pour la monte naturelle')
                                             ->color('gray'),
                                     ])),
 
@@ -180,46 +194,45 @@ class CycleReproductionForm
                                     ->visible(fn ($get) => $get('type') === 'IA')
                                     ->afterLabel(Schema::start([
                                         Icon::make(Heroicon::QuestionMarkCircle)
-                                            ->tooltip('Numéro du lot de semence utilisé pour l\'IA')
+                                            ->tooltip('Numéro du lot de semence utilisé')
                                             ->color('gray'),
                                     ])),
-
-                                TextInput::make('intervenant')
-                                    ->label('Intervenant')
-                                    ->maxLength(100)
-                                    ->afterLabel(Schema::start([
-                                        Icon::make(Heroicon::QuestionMarkCircle)
-                                            ->tooltip('Nom de la personne ayant effectué l\'insémination ou la saillie')
-                                            ->color('gray'),
-                                    ])),
-
-                                Textarea::make('notes')
-                                    ->label('Notes')
-                                    ->rows(2)
-                                    ->columnSpanFull()
-                                    ->afterLabel(Schema::start([
-                                        Icon::make(Heroicon::QuestionMarkCircle)
-                                            ->tooltip('Observations particulières sur cette saillie')
-                                            ->color('gray'),
-                                    ])),
+                                //
+                                //                                TextInput::make('intervenant')
+                                //                                    ->label('Intervenant')
+                                //                                    ->maxLength(100)
+                                //                                    ->afterLabel(Schema::start([
+                                //                                        Icon::make(Heroicon::QuestionMarkCircle)
+                                //                                            ->tooltip('Personne ayant effectué l\'insémination')
+                                //                                            ->color('gray'),
+                                //                                    ])),
                             ])
-                            ->columns(2)
-                            ->itemLabel(fn (array $state): ?string => isset($state['date_heure']) ? \Carbon\Carbon::parse($state['date_heure'])->format('d/m/Y H:i').' - '.($state['type'] ?? '') : null)
+                            ->columns(3)
+                            ->itemLabel(fn (array $state): ?string => isset($state['date_heure'])
+                                ? \Carbon\Carbon::parse($state['date_heure'])->format('d/m/Y H:i').' - '.($state['type'] ?? '')
+                                : null)
                             ->deleteAction(
                                 fn ($action) => $action->after(function ($get, $set) {
-                                    // Après suppression d'une saillie, recalculer ou vider la date de mise-bas prévue
                                     $saillies = $get('saillies') ?? [];
                                     $dates = array_filter(array_column($saillies, 'date_heure'));
 
                                     if (! empty($dates)) {
-                                        // Il reste des saillies avec date
                                         $premiereDate = min($dates);
                                         $dateSaillie = \Carbon\Carbon::parse($premiereDate);
                                         $dateMiseBasPrevue = $dateSaillie->copy()->addDays(114);
                                         $set('date_mise_bas_prevue', $dateMiseBasPrevue->format('Y-m-d'));
+                                        $set('date_premiere_saillie', $premiereDate);
+
+                                        $types = array_filter(array_column($saillies, 'type'));
+                                        if (! empty($types)) {
+                                            $typePrincipal = array_count_values($types);
+                                            arsort($typePrincipal);
+                                            $set('type_saillie', array_key_first($typePrincipal));
+                                        }
                                     } else {
-                                        // Plus de saillies, vider la date
                                         $set('date_mise_bas_prevue', null);
+                                        $set('date_premiere_saillie', null);
+                                        $set('type_saillie', null);
                                     }
                                 })
                             )
@@ -229,24 +242,40 @@ class CycleReproductionForm
                             ->defaultItems(0)
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Ajoutez plusieurs saillies/inséminations pour maximiser les chances de réussite (généralement 2-3 à 12-24h d\'intervalle)')
+                                    ->tooltip('Ajoutez plusieurs saillies/inséminations pour maximiser les chances (2-3 à 12-24h d\'intervalle)')
                                     ->color('gray'),
                             ])),
-                    ]),
+
+                        // Champs cachés pour stocker date_premiere_saillie et type_saillie
+                        DateTimePicker::make('date_premiere_saillie')
+                            ->label('Date première saillie')
+                            ->hidden()
+                            ->dehydrated(),
+
+                        Select::make('type_saillie')
+                            ->label('Type saillie')
+                            ->options([
+                                'IA' => 'IA',
+                                'MN' => 'MN',
+                            ])
+                            ->hidden()
+                            ->dehydrated(),
+                    ])
+                    ->columnSpan(2),
 
                 Section::make('Diagnostic de gestation')
                     ->description('Résultats du diagnostic de gestation')
+                    ->icon(Heroicon::Beaker)
                     ->schema([
                         DatePicker::make('date_diagnostic')
                             ->label('Date du diagnostic')
                             ->native(false)
-                            ->rules([
-                                fn ($get, $record) => new DateDiagnosticAfterSaillieRule($get, $record),
-                            ])
-                            ->helperText('')
+                            ->maxDate(now())
+                            ->minDate(fn (Get $get): ?string => $get('date_premiere_saillie'))
+                            ->helperText('Doit être après la première saillie')
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('⚠️ Date du diagnostic de gestation nécessite au moins une saillie enregistrée. Doit être après la première saillie.')
+                                    ->tooltip('Date du diagnostic de gestation')
                                     ->color('gray'),
                             ])),
 
@@ -254,69 +283,80 @@ class CycleReproductionForm
                             ->label('Résultat du diagnostic')
                             ->required()
                             ->options([
-                                'en_attente' => 'En attente',
                                 'positif' => 'Positif (gestante)',
                                 'negatif' => 'Négatif (vide)',
                             ])
-                            ->default('en_attente')
+                            ->default('positif')
                             ->native(false)
-                            ->live()
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
                                     ->tooltip('Résultat du diagnostic de gestation')
                                     ->color('gray'),
                             ])),
                     ])
-                    ->columns(2),
+                    ->columns(2)
+                    ->columnSpan(2)
+                    ->visible(fn (Get $get, $record): bool => ! empty($get('date_premiere_saillie')) || ($record && ! empty($record->date_premiere_saillie))),
 
                 Section::make('Mise-bas')
                     ->description('Dates prévisionnelle et réelle de mise-bas')
+                    ->icon(Heroicon::Cake)
                     ->schema([
                         DatePicker::make('date_mise_bas_prevue')
                             ->label('Date de mise-bas prévue')
                             ->native(false)
-                            ->helperText('Calculée automatiquement (date de saillie + 114 jours), mais modifiable')
+                            ->disabled()
+                            ->dehydrated()
+                            ->helperText('Calculée automatiquement (saillie + 114 jours)')
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Date de mise-bas prévue (calculée automatiquement : date saillie + 114 jours de gestation, modifiable)')
+                                    ->tooltip('Date de mise-bas prévue (calculée automatiquement)')
                                     ->color('gray'),
                             ])),
 
                         DatePicker::make('date_mise_bas_reelle')
                             ->label('Date de mise-bas réelle')
                             ->native(false)
+                            ->maxDate(now())
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
                                     ->tooltip('Date réelle de mise-bas (à remplir après la mise-bas)')
                                     ->color('gray'),
                             ])),
                     ])
-                    ->columns(2),
+                    ->columns(2)
+                    ->columnSpan(2)
+                    ->visible(fn (Get $get, $record): bool => ! empty($get('date_premiere_saillie')) || ($record && ! empty($record->date_premiere_saillie))),
 
-                Section::make('Échec et notes')
-                    ->description('Informations en cas d\'échec et notes complémentaires')
+                Section::make('Informations complémentaires')
+                    ->description('Motif d\'échec et notes')
+                    ->icon(Heroicon::DocumentText)
                     ->schema([
                         Textarea::make('motif_echec')
                             ->label('Motif d\'échec')
+                            ->placeholder('Raison de l\'échec de gestation...')
                             ->rows(3)
                             ->columnSpanFull()
-                            ->visible(fn ($get) => in_array($get('statut_cycle'), ['termine_echec', 'avorte']))
+                            ->visible(fn (Get $get): bool => $get('statut_cycle') === 'echec_gestation')
+                            ->required(fn (Get $get): bool => $get('statut_cycle') === 'echec_gestation')
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Raison de l\'échec ou de l\'avortement du cycle (ex: non fécondation, avortement, pathologie)')
+                                    ->tooltip('Raison de l\'échec de gestation')
                                     ->color('gray'),
                             ])),
 
                         Textarea::make('notes')
                             ->label('Notes')
+                            ->placeholder('Observations complémentaires sur le cycle...')
                             ->rows(4)
                             ->columnSpanFull()
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Observations complémentaires sur le cycle de reproduction')
+                                    ->tooltip('Observations complémentaires')
                                     ->color('gray'),
                             ])),
                     ])
+                    ->columnSpan(2)
                     ->collapsed(),
             ]);
     }

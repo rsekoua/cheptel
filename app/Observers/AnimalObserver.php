@@ -66,7 +66,7 @@ class AnimalObserver
             'animal_id' => $animal->id,
             'numero_cycle' => $numeroCycle,
             'date_debut' => now(),
-            'statut_cycle' => 'en_cours',
+            'statut_cycle' => 'gestation_en_cours',
             'resultat_diagnostic' => 'en_attente',
         ]);
 

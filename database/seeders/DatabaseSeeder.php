@@ -33,23 +33,21 @@ class DatabaseSeeder extends Seeder
             ['nom' => 'Large White', 'type' => 'maternelle', 'gmq_moyen' => 750, 'poids_adulte_moyen' => 280],
             ['nom' => 'Landrace', 'type' => 'maternelle', 'gmq_moyen' => 720, 'poids_adulte_moyen' => 270],
             ['nom' => 'Duroc', 'type' => 'paternelle', 'gmq_moyen' => 800, 'poids_adulte_moyen' => 300],
-            ['nom' => 'Piétrain', 'type' => 'paternelle', 'gmq_moyen' => 680, 'poids_adulte_moyen' => 260],
-            ['nom' => 'Hampshire', 'type' => 'mixte', 'gmq_moyen' => 740, 'poids_adulte_moyen' => 275],
         ])->map(fn ($race) => Race::create($race));
 
         // Créer des animaux (truies, cochettes, verrats)
-        $truies = Animal::factory(3)->create([
+        $truies = Animal::factory(2)->create([
             'type_animal' => 'truie',
             //   'sexe' => 'F',
             'race_id' => fn () => $races->random()->id,
             // 'statut_actuel' => 'gestante_confirmee',
         ]);
 
-        $verrats = Animal::factory(2)->create([
+        $verrats = Animal::factory(1)->create([
             'type_animal' => 'verrat',
             'race_id' => fn () => $races->random()->id,
             //  'sexe' => 'M',
-            'statut_actuel' => 'active',
+            // 'is_actif' => 'active',
         ]);
 
         // Créer des lots de production

@@ -2,13 +2,11 @@
 
 namespace App\Filament\Resources\CycleReproductions\Tables;
 
-use App\Filament\Resources\CycleReproductions\Actions\EnregistrerMiseBasAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class CycleReproductionsTable
@@ -20,116 +18,97 @@ class CycleReproductionsTable
                 TextColumn::make('animal.numero_identification')
                     ->label('Animal')
                     ->searchable()
-                    ->sortable()
-                    ->description(fn ($record) => $record->animal?->type_animal),
+                    ->sortable(),
 
                 TextColumn::make('numero_cycle')
                     ->label('N° Cycle')
                     ->numeric()
-                    ->sortable()
-                    ->alignCenter(),
+                    ->sortable(),
 
                 TextColumn::make('date_debut')
-                    ->label('Date début')
+                    ->label('Date de début')
                     ->date('d/m/Y')
                     ->sortable(),
 
                 TextColumn::make('statut_cycle')
                     ->label('Statut')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'en_cours' => 'info',
-                        'termine_succes' => 'success',
-                        'termine_echec' => 'danger',
-                        'avorte' => 'warning',
-                    })
                     ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'en_cours' => 'En cours',
-                        'termine_succes' => 'Terminé (succès)',
-                        'termine_echec' => 'Terminé (échec)',
-                        'avorte' => 'Avorté',
+                        'gestation_en_cours' => 'Gestation en cours',
+                        'mise_bas_effectuee' => 'Mise-bas effectuée',
+                        'echec_gestation' => 'Échec de gestation',
                         default => $state,
-                    }),
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        'gestation_en_cours' => 'warning',
+                        'mise_bas_effectuee' => 'success',
+                        'echec_gestation' => 'danger',
+                        default => 'gray',
+                    })
+                    ->sortable(),
 
-                TextColumn::make('resultat_diagnostic')
-                    ->label('Diagnostic')
+                TextColumn::make('date_premiere_saillie')
+                    ->label('1ère saillie')
+                    ->dateTime('d/m/Y H:i')
+                    ->sortable()
+                    ->placeholder('-'),
+
+                TextColumn::make('type_saillie')
+                    ->label('Type')
                     ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'positif' => 'success',
-                        'negatif' => 'danger',
-                        'en_attente' => 'gray',
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'IA' => 'Insémination Artificielle',
+                        'MN' => 'Monte Naturelle',
+                        default => '-',
                     })
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'positif' => 'Gestante',
-                        'negatif' => 'Vide',
-                        'en_attente' => 'En attente',
-                        default => $state,
-                    }),
+                    ->color(fn (?string $state): string => match ($state) {
+                        'IA' => 'info',
+                        'MN' => 'success',
+                        default => 'gray',
+                    })
+                    ->placeholder('-'),
 
                 TextColumn::make('saillies_count')
                     ->label('Nb saillies')
                     ->counts('saillies')
                     ->badge()
-                    ->color('info')
-                    ->alignCenter()
-                    ->sortable(),
-
-                //                TextColumn::make('saillies')
-                //                    ->label('Première saillie')
-                //                    ->formatStateUsing(function ($record) {
-                //                        $premiereSaillie = $record->saillies()->orderBy('date_heure')->first();
-                //                        if (! $premiereSaillie) {
-                //                            return '-';
-                //                        }
-                //
-                //                        return $premiereSaillie->date_heure->format('d/m/Y H:i').' ('.$premiereSaillie->type.')';
-                //                    })
-                //                    ->placeholder('-')
-                //                    ->toggleable(),
+                    ->color('info'),
 
                 TextColumn::make('date_diagnostic')
                     ->label('Date diagnostic')
                     ->date('d/m/Y')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->placeholder('-')
+                    ->toggleable(),
+
+                TextColumn::make('resultat_diagnostic')
+                    ->label('Résultat')
+                    ->badge()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'positif' => 'Positif (gestante)',
+                        'negatif' => 'Négatif (vide)',
+                        default => $state,
+                    })
+                    ->color(fn (string $state): string => match ($state) {
+                        'positif' => 'success',
+                        'negatif' => 'danger',
+                        default => 'gray',
+                    })
+                    ->toggleable(),
 
                 TextColumn::make('date_mise_bas_prevue')
                     ->label('Mise-bas prévue')
                     ->date('d/m/Y')
-                    ->sortable(),
+                    ->sortable()
+                    ->placeholder('-')
+                    ->toggleable(),
 
                 TextColumn::make('date_mise_bas_reelle')
                     ->label('Mise-bas réelle')
                     ->date('d/m/Y')
                     ->sortable()
-                    ->placeholder('-'),
-
-                TextColumn::make('portee')
-                    ->label('Portée')
-                    ->formatStateUsing(function ($record) {
-                        if ($record->portee) {
-                            return $record->portee->numero_identification;
-                        }
-
-                        if ($record->resultat_diagnostic !== 'positif') {
-                            return 'Diagnostic requis';
-                        }
-
-                        return 'Non enregistrée';
-                    })
-                    ->badge()
-                    ->color(fn ($record) => $record->portee ? 'success' : 'gray')
-                    ->url(fn ($record) => $record->portee ? \App\Filament\Resources\Portees\PorteeResource::getUrl('view', ['record' => $record->portee->id]) : null)
-                    ->openUrlInNewTab()
-                    ->icon(fn ($record) => $record->portee ? 'heroicon-o-link' : null)
-                    ->description(function ($record) {
-                        if ($record->portee) {
-                            return "{$record->portee->nb_total} porcelets vivants";
-                        }
-
-                        return null;
-                    })
-                    ->sortable(),
+                    ->placeholder('-')
+                    ->toggleable(),
 
                 TextColumn::make('created_at')
                     ->label('Créé le')
@@ -144,35 +123,10 @@ class CycleReproductionsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('statut_cycle')
-                    ->label('Statut')
-                    ->options([
-                        'en_cours' => 'En cours',
-                        'termine_succes' => 'Terminé (succès)',
-                        'termine_echec' => 'Terminé (échec)',
-                        'avorte' => 'Avorté',
-                    ])
-                    ->multiple(),
-
-                SelectFilter::make('resultat_diagnostic')
-                    ->label('Diagnostic')
-                    ->options([
-                        'en_attente' => 'En attente',
-                        'positif' => 'Positif (gestante)',
-                        'negatif' => 'Négatif (vide)',
-                    ])
-                    ->multiple(),
-
-                SelectFilter::make('type_saillie')
-                    ->label('Type saillie')
-                    ->options([
-                        'IA' => 'IA (Insémination Artificielle)',
-                        'MN' => 'MN (Monte Naturelle)',
-                    ]),
+                //
             ])
             ->recordActions([
-                EnregistrerMiseBasAction::make(),
-                // ViewAction::make(),
+                ViewAction::make(),
                 EditAction::make(),
             ])
             ->toolbarActions([

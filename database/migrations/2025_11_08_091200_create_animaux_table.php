@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('numero_identification', 50)->unique();
             $table->enum('type_animal', ['truie', 'verrat']);
             $table->foreignId('race_id')->constrained('races')->cascadeOnDelete();
-            // $table->enum('sexe', ['F', 'M']);
+            $table->boolean('is_actif')->default(true);
             $table->date('date_naissance')->nullable();
             $table->date('date_entree')->nullable();
             $table->enum('origine', ['naissance_elevage', 'achat_externe']);
@@ -24,22 +24,20 @@ return new class extends Migration
             $table->string('numero_pere', 50)->nullable();
             $table->string('provenance', 50)->nullable();
 
-            $table->enum('statut_actuel', ['active', 'sevree', 'gestante', 'en_lactation', 'reforme'])->default('active');
             //            $table->foreignId('salle_id')->nullable()->constrained('salles')->nullOnDelete();
             //            $table->string('place_numero', 20)->nullable();
             //            $table->decimal('poids_actuel_kg', 6, 2)->nullable();
             //            $table->date('date_derniere_pesee')->nullable();
             //            $table->foreignId('plan_alimentation_id')->nullable()->constrained('plan_alimentations')->nullOnDelete();
-            //            $table->string('bande', 50)->nullable();
+
             $table->date('date_reforme')->nullable();
             $table->text('motif_reforme')->nullable();
-            $table->text('notes')->nullable();
             $table->timestamps();
             $table->softDeletes();
 
             $table->index('numero_identification');
             $table->index('type_animal');
-            $table->index('statut_actuel');
+            $table->index('is_actif');
         });
     }
 

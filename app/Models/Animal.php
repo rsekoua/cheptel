@@ -21,14 +21,13 @@ class Animal extends Model
         'race_id',
         'date_naissance',
         'date_entree',
+        'is_actif',
         'origine',
         'numero_mere',
         'numero_pere',
         'provenance',
-        'statut_actuel',
         'date_reforme',
         'motif_reforme',
-        'notes',
     ];
 
     protected function casts(): array
@@ -37,6 +36,7 @@ class Animal extends Model
             'date_naissance' => 'date',
             'date_entree' => 'date',
             'date_reforme' => 'date',
+            'is_admin' => 'boolean',
         ];
     }
 

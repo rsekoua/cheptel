@@ -20,13 +20,15 @@ class CycleReproductionResource extends Resource
 {
     protected static ?string $model = CycleReproduction::class;
 
-    //    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHeart;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
-    protected static string|null|\UnitEnum $navigationGroup = 'Reproduction';
+    protected static ?string $navigationLabel = 'Cycles de reproduction';
 
     protected static ?string $modelLabel = 'Cycle de reproduction';
 
     protected static ?string $pluralModelLabel = 'Cycles de reproduction';
+
+    protected static string|null|\UnitEnum $navigationGroup = 'Reproduction';
 
     protected static ?int $navigationSort = 1;
 
@@ -56,19 +58,9 @@ class CycleReproductionResource extends Resource
     {
         return [
             'index' => ListCycleReproductions::route('/'),
-            // La création manuelle est désactivée - les cycles sont créés automatiquement
-            // create' => CreateCycleReproduction::route('/create'),
+            'create' => CreateCycleReproduction::route('/create'),
             'view' => ViewCycleReproduction::route('/{record}'),
             'edit' => EditCycleReproduction::route('/{record}/edit'),
         ];
-    }
-
-    /**
-     * Désactiver la création manuelle de cycles
-     * Les cycles sont créés automatiquement quand l'animal passe au statut approprié
-     */
-    public static function canCreate(): bool
-    {
-        return false;
     }
 }

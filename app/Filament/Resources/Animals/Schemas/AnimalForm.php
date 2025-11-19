@@ -6,6 +6,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Schemas\Components\Icon;
 use Filament\Schemas\Components\Section;
@@ -31,7 +32,7 @@ class AnimalForm
                             ->required()
                             ->maxLength(50)
                             ->unique(ignoreRecord: true)
-                            //->columnSpanFull()
+                            // ->columnSpanFull()
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
                                     ->tooltip('Numéro unique d\'identification de l\'animal')
@@ -51,7 +52,7 @@ class AnimalForm
                             ])
                             ->live()
                             ->inline()
-                           //->columnSpanFull()
+                           // ->columnSpanFull()
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
                                     ->tooltip('Truie = femelle reproductrice. Verrat = mâle reproducteur')
@@ -71,42 +72,34 @@ class AnimalForm
                                     ->color('gray'),
                             ])),
 
-                        ToggleButtons::make('statut_actuel')
+                        Toggle::make('is_actif')
                             ->label('Statut actuel')
-                            ->required()
-                            ->inline()
-                            ->options([
-                                'active' => 'Active',
-                                'sevree' => 'Sevrée',
-                                'gestante' => 'Gestante',
-                                'en_lactation' => 'En lactation',
-                                'reforme' => 'Réformée',
-                            ])->columnSpanFull()
-                            //->native(false)
-                            ->default('active')
+                            ->onIcon(Heroicon::Bolt)
+                            ->offIcon(Heroicon::User)
+                            ->default(true)
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
                                     ->tooltip('Statut actuel de l\'animal dans l\'élevage')
                                     ->color('gray'),
                             ])),
 
-//                        Select::make('statut_actuel')
-//                            ->label('Statut actuel')
-//                            ->required()
-//                            ->options([
-//                                'active' => 'Active',
-//                                'sevree' => 'Sevrée',
-//                                'gestante' => 'Gestante',
-//                                'en_lactation' => 'En lactation',
-//                                'reforme' => 'Réformée',
-//                            ])
-//                            ->native(false)
-//                            ->default('active')
-//                            ->afterLabel(Schema::start([
-//                                Icon::make(Heroicon::QuestionMarkCircle)
-//                                    ->tooltip('Statut actuel de l\'animal dans l\'élevage')
-//                                    ->color('gray'),
-//                            ])),
+                        //                        Select::make('statut_actuel')
+                        //                            ->label('Statut actuel')
+                        //                            ->required()
+                        //                            ->options([
+                        //                                'active' => 'Active',
+                        //                                'sevree' => 'Sevrée',
+                        //                                'gestante' => 'Gestante',
+                        //                                'en_lactation' => 'En lactation',
+                        //                                'reforme' => 'Réformée',
+                        //                            ])
+                        //                            ->native(false)
+                        //                            ->default('active')
+                        //                            ->afterLabel(Schema::start([
+                        //                                Icon::make(Heroicon::QuestionMarkCircle)
+                        //                                    ->tooltip('Statut actuel de l\'animal dans l\'élevage')
+                        //                                    ->color('gray'),
+                        //                            ])),
                     ]),
                 // ->columns(2)
                 // ->columnSpan(2),

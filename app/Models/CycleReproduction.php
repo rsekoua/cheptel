@@ -19,7 +19,6 @@ class CycleReproduction extends Model
         'animal_id',
         'numero_cycle',
         'date_debut',
-        'date_chaleurs',
         'date_premiere_saillie',
         'type_saillie',
         'date_diagnostic',
@@ -35,7 +34,6 @@ class CycleReproduction extends Model
     {
         return [
             'date_debut' => 'date',
-            'date_chaleurs' => 'datetime',
             'date_premiere_saillie' => 'datetime',
             'date_diagnostic' => 'date',
             'date_mise_bas_prevue' => 'date',
@@ -58,20 +56,25 @@ class CycleReproduction extends Model
         return $this->hasOne(Portee::class);
     }
 
-    public function scopeEnCours(Builder $query): void
+    public function scopeGestationEnCours(Builder $query): void
     {
-        $query->where('statut_cycle', 'en_cours');
+        $query->where('statut_cycle', 'gestation_en_cours');
     }
 
     public function scopeGestantes(Builder $query): void
     {
         $query->where('resultat_diagnostic', 'positif')
-            ->where('statut_cycle', 'en_cours');
+            ->where('statut_cycle', 'gestation_en_cours');
     }
 
-    public function scopeTermines(Builder $query): void
+    public function scopeMiseBasEffectuee(Builder $query): void
     {
-        $query->whereIn('statut_cycle', ['termine_succes', 'termine_echec', 'avorte']);
+        $query->where('statut_cycle', 'mise_bas_effectuee');
+    }
+
+    public function scopeEchecGestation(Builder $query): void
+    {
+        $query->where('statut_cycle', 'echec_gestation');
     }
 
     public function jourDeGestation(): ?int
