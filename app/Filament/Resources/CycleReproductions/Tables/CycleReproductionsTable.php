@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\CycleReproductions\Tables;
 
+use App\Filament\Resources\CycleReproductions\Actions\MiseBasAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -36,37 +37,41 @@ class CycleReproductionsTable
                     ->formatStateUsing(fn (string $state): string => match ($state) {
                         'gestation_en_cours' => 'Gestation en cours',
                         'mise_bas_effectuee' => 'Mise-bas effectuée',
-                        'echec_gestation' => 'Échec de gestation',
+                        'termine_echec' => 'Terminé avec echec',
+                        'termine_succes' => 'Terminé avec succès',
+                        'en_lactation' => 'En lactation',
                         default => $state,
                     })
                     ->color(fn (string $state): string => match ($state) {
                         'gestation_en_cours' => 'warning',
                         'mise_bas_effectuee' => 'success',
-                        'echec_gestation' => 'danger',
+                        'termine_succes' => 'success',
+                        'termine_echec' => 'danger',
+                        'en_lactation' => 'info',
                         default => 'gray',
                     })
                     ->sortable(),
 
-//                TextColumn::make('date_premiere_saillie')
-//                    ->label('1ère saillie')
-//                    ->dateTime('d/m/Y H:i')
-//                    ->sortable()
-//                    ->placeholder('-'),
-//
-//                TextColumn::make('type_saillie')
-//                    ->label('Type')
-//                    ->badge()
-//                    ->formatStateUsing(fn (?string $state): string => match ($state) {
-//                        'IA' => 'Insémination Artificielle',
-//                        'MN' => 'Monte Naturelle',
-//                        default => '-',
-//                    })
-//                    ->color(fn (?string $state): string => match ($state) {
-//                        'IA' => 'info',
-//                        'MN' => 'success',
-//                        default => 'gray',
-//                    })
-//                    ->placeholder('-'),
+                //                TextColumn::make('date_premiere_saillie')
+                //                    ->label('1ère saillie')
+                //                    ->dateTime('d/m/Y H:i')
+                //                    ->sortable()
+                //                    ->placeholder('-'),
+                //
+                //                TextColumn::make('type_saillie')
+                //                    ->label('Type')
+                //                    ->badge()
+                //                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                //                        'IA' => 'Insémination Artificielle',
+                //                        'MN' => 'Monte Naturelle',
+                //                        default => '-',
+                //                    })
+                //                    ->color(fn (?string $state): string => match ($state) {
+                //                        'IA' => 'info',
+                //                        'MN' => 'success',
+                //                        default => 'gray',
+                //                    })
+                //                    ->placeholder('-'),
 
                 TextColumn::make('saillies_count')
                     ->label('Nb saillies')
@@ -103,6 +108,14 @@ class CycleReproductionsTable
                     ->placeholder('-')
                     ->toggleable(),
 
+                TextColumn::make('portee.nb_total')
+                    ->label('Portée')
+                    ->badge()
+                    ->color('success')
+                    ->suffix(' porcelets')
+                    ->placeholder('-')
+                    ->sortable(),
+
                 TextColumn::make('date_mise_bas_reelle')
                     ->label('Mise-bas réelle')
                     ->date('d/m/Y')
@@ -126,6 +139,7 @@ class CycleReproductionsTable
                 //
             ])
             ->recordActions([
+                MiseBasAction::make(),
                 ViewAction::make(),
                 EditAction::make(),
             ])

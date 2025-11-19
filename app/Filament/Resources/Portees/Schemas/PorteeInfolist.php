@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Portees\Schemas;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 
 class PorteeInfolist
 {
@@ -13,27 +14,30 @@ class PorteeInfolist
         return $schema
             ->components([
                 Section::make('Informations générales')
+                    ->icon(Heroicon::InformationCircle)
                     ->schema([
-                        TextEntry::make('animal.numero_identification')
-                            ->label('Truie/Cochette')
-                            ->weight('bold')
-                            ->size('lg'),
-
-                        TextEntry::make('animal.type_animal')
-                            ->label('Type')
-                            ->badge(),
-
                         TextEntry::make('cycleReproduction.numero_cycle')
                             ->label('Cycle de reproduction N°')
-                            ->numeric(),
+                            ->numeric()
+                            ->badge()
+                            ->color('info'),
+
+                        TextEntry::make('animal.numero_identification')
+                            ->label('Truie')
+                            ->weight('bold')
+                            ->size('lg'),
+                        // ->description(fn ($record) => $record->animal?->type_animal),
 
                         TextEntry::make('date_mise_bas')
-                            ->label('Date et heure de mise-bas')
-                            ->dateTime('d/m/Y H:i'),
+                            ->label('Date et heure de mise bas')
+                            ->dateTime('d/m/Y H:i')
+                            ->badge()
+                            ->color('success'),
                     ])
-                    ->columns(2),
+                    ->columns(3),
 
-                Section::make('Données de mise-bas')
+                Section::make('Données de mise bas')
+                    ->icon(Heroicon::Cake)
                     ->schema([
                         TextEntry::make('nb_nes_vifs')
                             ->label('Nés vivants')
@@ -49,29 +53,25 @@ class PorteeInfolist
                             ->color(fn ($state) => $state > 0 ? 'danger' : 'gray')
                             ->badge(),
 
-                        TextEntry::make('nb_momifies')
-                            ->label('Momifiés')
-                            ->numeric()
-                            ->suffix(' porcelets')
-                            ->color(fn ($state) => $state > 0 ? 'warning' : 'gray')
-                            ->badge(),
-
                         TextEntry::make('nb_total')
-                            ->label('Nombre total')
+                            ->label('Total vivants')
                             ->numeric()
                             ->suffix(' porcelets')
                             ->badge()
-                            ->color('info'),
+                            ->color('info')
+                            ->size('lg'),
 
                         TextEntry::make('poids_moyen_naissance_g')
                             ->label('Poids moyen à la naissance')
                             ->numeric(decimalPlaces: 0)
                             ->suffix(' g')
-                            ->placeholder('-'),
+                            ->placeholder('-')
+                            ->helperText('Généralement entre 1200g et 1600g'),
                     ])
                     ->columns(3),
 
                 Section::make('Données de sevrage')
+                    ->icon(Heroicon::ArrowRightCircle)
                     ->schema([
                         TextEntry::make('date_sevrage')
                             ->label('Date de sevrage')
@@ -85,7 +85,7 @@ class PorteeInfolist
                             ->numeric()
                             ->suffix(' porcelets')
                             ->placeholder('-')
-                            ->color('info')
+                            ->color('success')
                             ->badge(),
 
                         TextEntry::make('poids_total_sevrage_kg')
@@ -98,36 +98,19 @@ class PorteeInfolist
                             ->label('Poids moyen au sevrage')
                             ->numeric(decimalPlaces: 2)
                             ->suffix(' kg')
-                            ->placeholder('-'),
+                            ->placeholder('-')
+                            ->helperText('Généralement entre 6 et 8 kg'),
                     ])
                     ->columns(2),
 
-                Section::make('Indicateurs de performance')
-                    ->schema([
-                        TextEntry::make('taux_natalite_maternite')
-                            ->label('Taux de natalité en maternité')
-                            ->state(fn ($record) => $record->taux_natalite_maternite)
-                            ->badge()
-                            ->color(fn ($state): string => match (true) {
-//                                $state === null => 'gray',
-//                                $state < 10 => 'success',
-//                                $state < 15 => 'warning',
-//                                default => 'danger',
-                                $state === null => 'gray',
-                                $state > 90 => 'success',
-                                $state > 85 => 'warning',
-                                default => 'danger',
-                            })
-                            ->formatStateUsing(fn ($state): string => $state !== null ? number_format($state, 2).' %' : '-')
-                            ->helperText('Pourcentage de natalité lors de la mise bas'),
-                    ])
-                    ->columns(1),
-
                 Section::make('Destination')
+                    ->icon(Heroicon::ArrowTopRightOnSquare)
                     ->schema([
                         TextEntry::make('lotDestination.numero_lot')
                             ->label('Lot de destination')
-                            ->placeholder('-'),
+                            ->placeholder('-')
+                            ->badge()
+                            ->color('info'),
 
                         TextEntry::make('lotDestination.type_lot')
                             ->label('Type de lot')
@@ -148,6 +131,7 @@ class PorteeInfolist
                     ->collapsed(),
 
                 Section::make('Notes et horodatage')
+                    ->icon(Heroicon::DocumentText)
                     ->schema([
                         TextEntry::make('notes')
                             ->label('Notes')

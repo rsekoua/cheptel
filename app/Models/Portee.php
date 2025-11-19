@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Observers\PorteeObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+#[ObservedBy(PorteeObserver::class)]
 class Portee extends Model
 {
     use HasFactory;
@@ -100,7 +103,7 @@ class Portee extends Model
                     return null;
                 }
 
-                //$natalite = $this->nb_total - ($this->nb_sevres ?? 0);
+                // $natalite = $this->nb_total - ($this->nb_sevres ?? 0);
 
                 return round(($this->nb_total / $this->nb_nes_vifs) * 100, 2);
             }

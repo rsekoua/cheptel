@@ -2,8 +2,7 @@
 
 namespace App\Filament\Resources\Portees\Schemas;
 
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -17,9 +16,11 @@ class PorteeForm
     public static function configure(Schema $schema): Schema
     {
         return $schema
+            ->columns(2)
             ->components([
                 Section::make('Informations générales')
-                    ->description('Il est recommandé d\'utiliser l\'action "Enregistrer la mise-bas" depuis le cycle de reproduction')
+                    ->description('Il est recommandé d\'utiliser l\'action "Mise bas" depuis le cycle de reproduction')
+                    ->icon(Heroicon::InformationCircle)
                     ->schema([
                         Select::make('cycle_reproduction_id')
                             ->label('Cycle de reproduction')
@@ -48,20 +49,23 @@ class PorteeForm
                                     ->color('gray'),
                             ])),
                     ])
-                    ->columns(2),
+                    ->columns(2)
+                    ->columnSpan(2),
 
-                Section::make('Mise-bas')
-                    ->description('Données de la mise-bas (naissance des porcelets)')
+                Section::make('Mise bas')
+                    ->description('Données de la mise bas (naissance des porcelets)')
+                    ->icon(Heroicon::Cake)
                     ->schema([
-                        DatePicker::make('date_mise_bas')
-                            ->label('Date et heure de mise-bas')
+                        DateTimePicker::make('date_mise_bas')
+                            ->label('Date et heure de mise bas')
                             ->required()
                             ->native(false)
-//                            ->seconds(false)
+                            ->seconds(false)
+                            ->maxDate(now())
                             ->default(now())
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Date et heure de la mise-bas')
+                                    ->tooltip('Date et heure de la mise bas')
                                     ->color('gray'),
                             ])),
 
@@ -70,13 +74,13 @@ class PorteeForm
                             ->required()
                             ->numeric()
                             ->minValue(0)
+                            ->default(0)
                             ->suffix(' porcelets')
                             ->live()
                             ->afterStateUpdated(function ($state, $set, $get) {
-                                $nbMortNes = $get('nb_mort_nes') ?? 0;
-                                $nbMomifies = $get('nb_momifies') ?? 0;
-                                $total = ($state ?? 0) - $nbMortNes - $nbMomifies;
-                                $set('nb_total', $total);
+                                $nbNesVifs = (int) ($state ?? 0);
+                                $nbMortNes = (int) ($get('nb_mort_nes') ?? 0);
+                                $set('nb_total', $nbNesVifs - $nbMortNes);
                             })
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
@@ -93,47 +97,27 @@ class PorteeForm
                             ->suffix(' porcelets')
                             ->live()
                             ->afterStateUpdated(function ($state, $set, $get) {
-                                $nbNesVifs = $get('nb_nes_vifs') ?? 0;
-                                $nbMomifies = $get('nb_momifies') ?? 0;
-                                $total = $nbNesVifs - ($state ?? 0) - $nbMomifies;
-                                $set('nb_total', $total);
+                                $nbMortNes = (int) ($state ?? 0);
+                                $nbNesVifs = (int) ($get('nb_nes_vifs') ?? 0);
+                                $set('nb_total', $nbNesVifs - $nbMortNes);
                             })
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Nombre de porcelets mort-nés (morts pendant ou juste après la mise-bas)')
-                                    ->color('gray'),
-                            ])),
-
-                        TextInput::make('nb_momifies')
-                            ->label('Nombre de momifiés')
-                            ->required()
-                            ->numeric()
-                            ->minValue(0)
-                            ->default(0)
-                            ->suffix('porcelets')
-                            ->live()
-                            ->afterStateUpdated(function ($state, $set, $get) {
-                                $nbNesVifs = $get('nb_nes_vifs') ?? 0;
-                                $nbMortNes = $get('nb_mort_nes') ?? 0;
-                                $total = $nbNesVifs - $nbMortNes - ($state ?? 0);
-                                $set('nb_total', $total);
-                            })
-                            ->afterLabel(Schema::start([
-                                Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Nombre de porcelets momifiés (morts in utero avant la mise-bas)')
+                                    ->tooltip('Nombre de porcelets mort-nés')
                                     ->color('gray'),
                             ])),
 
                         TextInput::make('nb_total')
-                            ->label('Nombre total vivant')
+                            ->label('Nombre total de porcelets vivants')
                             ->numeric()
+                            ->required()
                             ->disabled()
                             ->dehydrated()
+                            ->default(0)
                             ->suffix(' porcelets')
-                            // ->helperText('Calculé automatiquement : Nés vivants + Mort-nés + Momifiés')
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Nombre total de porcelets (vivants - mort-nés - momifiés)')
+                                    ->tooltip('Calculé automatiquement : Nés vivants - Mort-nés')
                                     ->color('gray'),
                             ])),
 
@@ -143,24 +127,29 @@ class PorteeForm
                             ->suffix('g')
                             ->step(1)
                             ->minValue(0)
+                            ->helperText('Généralement entre 1200g et 1600g')
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Poids moyen des porcelets à la naissance en grammes (généralement entre 1200g et 1600g)')
+                                    ->tooltip('Poids moyen des porcelets à la naissance en grammes')
                                     ->color('gray'),
                             ])),
                     ])
-                    ->columns(3),
+                    ->columns(3)
+                    ->columnSpan(2),
 
                 Section::make('Sevrage')
                     ->description('Données du sevrage de la portée')
+                    ->icon(Heroicon::ArrowRightCircle)
                     ->schema([
-                        DatePicker::make('date_sevrage')
+                        DateTimePicker::make('date_sevrage')
                             ->label('Date de sevrage')
                             ->native(false)
+                            ->seconds(false)
+                            ->maxDate(now())
                             ->live()
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Date du sevrage (généralement 21-28 jours après la mise-bas)')
+                                    ->tooltip('Date du sevrage (généralement 21-28 jours après la mise bas)')
                                     ->color('gray'),
                             ])),
 
@@ -168,7 +157,7 @@ class PorteeForm
                             ->label('Nombre de sevrés')
                             ->numeric()
                             ->minValue(0)
-                            ->suffix('porcelets')
+                            ->suffix(' porcelets')
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
                                     ->tooltip('Nombre de porcelets sevrés vivants')
@@ -178,7 +167,7 @@ class PorteeForm
                         TextInput::make('poids_total_sevrage_kg')
                             ->label('Poids total au sevrage')
                             ->numeric()
-                            ->suffix('kg')
+                            ->suffix(' kg')
                             ->step(0.01)
                             ->minValue(0)
                             ->afterLabel(Schema::start([
@@ -190,117 +179,58 @@ class PorteeForm
                         TextInput::make('poids_moyen_sevrage_kg')
                             ->label('Poids moyen au sevrage')
                             ->numeric()
-                            ->suffix('kg')
+                            ->suffix(' kg')
                             ->step(0.01)
                             ->minValue(0)
+                            ->helperText('Généralement entre 6 et 8 kg')
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Poids moyen par porcelet au sevrage (généralement entre 6 et 8 kg)')
+                                    ->tooltip('Poids moyen par porcelet au sevrage')
                                     ->color('gray'),
                             ])),
                     ])
-                    ->columns(2),
+                    ->columns(2)
+                    ->columnSpan(2),
 
-                Section::make('Destination simple')
-                    ->description('Si toute la portée va dans un seul lot (méthode simple)')
+                Section::make('Destination')
+                    ->description('Lot de destination après sevrage')
+                    ->icon(Heroicon::ArrowTopRightOnSquare)
                     ->schema([
                         Select::make('lot_destination_id')
-                            ->label('Lot de destination unique')
+                            ->label('Lot de destination')
                             ->relationship('lotDestination', 'numero_lot')
                             ->searchable()
                             ->preload()
                             ->native(false)
                             ->disabled(fn ($get) => ! $get('date_sevrage'))
                             ->helperText(fn ($get) => ! $get('date_sevrage')
-                                ? '⚠️ Vous devez d\'abord saisir la date de sevrage ci-dessus'
-                                : 'Utilisez cette option si tous les porcelets vont dans le même lot'
+                                ? '⚠️ Vous devez d\'abord saisir la date de sevrage'
+                                : 'Lot où les porcelets seront transférés après sevrage'
                             )
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Lot de post-sevrage où TOUS les porcelets seront transférés ensemble')
+                                    ->tooltip('Lot de post-sevrage pour cette portée')
                                     ->color('gray'),
                             ])),
-                    ]),
-
-                Section::make('Répartition avancée dans plusieurs lots')
-                    ->description(fn ($get) => ! $get('date_sevrage')
-                        ? '⚠️ Vous devez d\'abord saisir la date de sevrage ci-dessus'
-                        : 'Si vous répartissez les porcelets dans plusieurs lots (tri par poids, qualité, etc.)'
-                    )
-                    ->schema([
-                        Repeater::make('lots')
-                            ->label('Répartition dans les lots')
-                            ->relationship()
-                            ->schema([
-                                Select::make('id')
-                                    ->label('Lot')
-                                    ->options(function () {
-                                        return \App\Models\Lot::query()
-                                            ->where('statut_lot', 'actif')
-                                            ->pluck('numero_lot', 'id');
-                                    })
-                                    ->searchable()
-                                    ->required()
-                                    ->native(false)
-                                    ->afterLabel(Schema::start([
-                                        Icon::make(Heroicon::QuestionMarkCircle)
-                                            ->tooltip('Lot de destination pour cette partie de la portée')
-                                            ->color('gray'),
-                                    ])),
-
-                                TextInput::make('pivot.nb_porcelets_transferes')
-                                    ->label('Nombre de porcelets')
-                                    ->required()
-                                    ->numeric()
-                                    ->minValue(1)
-                                    ->suffix('porcelets')
-                                    ->afterLabel(Schema::start([
-                                        Icon::make(Heroicon::QuestionMarkCircle)
-                                            ->tooltip('Nombre de porcelets transférés dans ce lot')
-                                            ->color('gray'),
-                                    ])),
-
-                                TextInput::make('pivot.poids_total_transfere_kg')
-                                    ->label('Poids total transféré')
-                                    ->numeric()
-                                    ->suffix('kg')
-                                    ->step(0.01)
-                                    ->afterLabel(Schema::start([
-                                        Icon::make(Heroicon::QuestionMarkCircle)
-                                            ->tooltip('Poids total des porcelets transférés dans ce lot')
-                                            ->color('gray'),
-                                    ])),
-                            ])
-                            ->columns(3)
-                            ->itemLabel(fn (array $state): ?string => isset($state['pivot']['nb_porcelets_transferes'])
-                                ? "{$state['pivot']['nb_porcelets_transferes']} porcelets"
-                                : null)
-                            ->addActionLabel('Ajouter un lot de destination')
-                            ->reorderable(false)
-                            ->collapsible()
-                            ->defaultItems(0)
-                            ->afterLabel(Schema::start([
-                                Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Répartissez les porcelets sevrés dans différents lots selon leur poids, qualité, etc.')
-                                    ->color('gray'),
-                            ]))
-                            ->helperText('⚠️ Si vous utilisez cette méthode, ne remplissez pas le "Lot de destination unique" ci-dessus'),
                     ])
-                    ->collapsed(),
+                    ->columnSpan(2),
 
                 Section::make('Notes')
                     ->description('Observations complémentaires')
+                    ->icon(Heroicon::DocumentText)
                     ->schema([
                         Textarea::make('notes')
                             ->label('Notes')
                             ->rows(4)
                             ->columnSpanFull()
+                            ->placeholder('Observations sur la mise bas, problèmes rencontrés, interventions...')
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Observations sur la mise-bas, problèmes rencontrés, interventions particulières, etc.')
+                                    ->tooltip('Observations complémentaires')
                                     ->color('gray'),
                             ])),
                     ])
+                    ->columnSpan(2)
                     ->collapsed(),
             ]);
     }

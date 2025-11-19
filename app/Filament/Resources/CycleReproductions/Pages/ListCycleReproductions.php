@@ -4,6 +4,7 @@ namespace App\Filament\Resources\CycleReproductions\Pages;
 
 use App\Filament\Resources\CycleReproductions\CycleReproductionResource;
 use App\Models\CycleReproduction;
+use App\Models\Portee;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -23,6 +24,8 @@ class ListCycleReproductions extends ListRecords
 
     public function getTabs(): array
     {
+
+        $nombrePorcelets = Portee::all()->sum(fn (Portee $portee) => $portee->nb_total);
         return [
             'Tous' => Tab::make(),
             'En gestation' => Tab::make()
@@ -35,6 +38,11 @@ class ListCycleReproductions extends ListRecords
                 ->iconPosition(IconPosition::After)
                 ->badge(CycleReproduction::query()->where('statut_cycle', '=', 'en_lactation')->count())
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('statut_cycle', '=', 'en_lactation')),
+            'Portées' => Tab::make()
+                //->icon('heroicon-m-user-group')
+                ->iconPosition(IconPosition::After)
+                ->badge($nombrePorcelets)
+                //->modifyQueryUsing(fn (Builder $query) => $query->where('statut_cycle', '=', 'en_lactation')),
 
 //            'Verrat' => Tab::make()
 ////
@@ -43,3 +51,5 @@ class ListCycleReproductions extends ListRecords
         ];
     }
 }
+
+
