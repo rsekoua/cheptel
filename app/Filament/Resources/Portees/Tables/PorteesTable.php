@@ -23,37 +23,37 @@ class PorteesTable
                     ->label('Cycle N°')
                     ->numeric()
                     ->sortable()
-                    ->alignCenter()
-                    ->description(fn ($record) => $record->cycleReproduction?->animal?->numero_identification),
+                    ->alignCenter(),
+                  //  ->description(fn ($record) => $record->cycleReproduction?->animal?->numero_identification),
 
                 TextColumn::make('animal.numero_identification')
-                    ->label('Truie/Cochette')
+                    ->label('Truie')
                     ->searchable()
                     ->sortable()
-                    ->weight('bold')
-                    ->description(fn ($record) => $record->animal?->type_animal),
+                    ->weight('bold'),
+                    //->description(fn ($record) => $record->animal?->type_animal),
 
                 TextColumn::make('date_mise_bas')
                     ->label('Mise bas')
                     ->dateTime('d/m/Y H:i')
                     ->sortable(),
 
-                TextColumn::make('nb_nes_vifs')
-                    ->label('Nés vivants')
-                    ->numeric()
-                    ->sortable()
-                    ->alignCenter()
-                    ->badge()
-                    ->color('success'),
-
-                TextColumn::make('nb_mort_nes')
-                    ->label('Mort-nés')
-                    ->numeric()
-                    ->sortable()
-                    ->alignCenter()
-                    ->badge()
-                    ->color(fn ($state) => $state > 0 ? 'danger' : 'gray')
-                    ->toggleable(),
+//                TextColumn::make('nb_nes_vifs')
+//                    ->label('Nés vivants')
+//                    ->numeric()
+//                    ->sortable()
+//                    ->alignCenter()
+//                    ->badge()
+//                    ->color('success'),
+//
+//                TextColumn::make('nb_mort_nes')
+//                    ->label('Mort-nés')
+//                    ->numeric()
+//                    ->sortable()
+//                    ->alignCenter()
+//                    ->badge()
+//                    ->color(fn ($state) => $state > 0 ? 'danger' : 'gray')
+//                    ->toggleable(),
 
                 TextColumn::make('nb_total')
                     ->label('Total vivants')
@@ -63,14 +63,14 @@ class PorteesTable
                     ->badge()
                     ->color('info'),
 
-                TextColumn::make('poids_moyen_naissance_g')
-                    ->label('Poids moy. nais.')
-                    ->numeric(decimalPlaces: 0)
-                    ->suffix(' g')
-                    ->sortable()
-                    ->alignCenter()
-                    ->placeholder('-')
-                    ->toggleable(),
+//                TextColumn::make('poids_moyen_naissance_g')
+//                    ->label('Poids moy. nais.')
+//                    ->numeric(decimalPlaces: 0)
+//                    ->suffix(' g')
+//                    ->sortable()
+//                    ->alignCenter()
+//                    ->placeholder('-')
+//                    ->toggleable(),
 
                 TextColumn::make('date_sevrage')
                     ->label('Date sevrage')
@@ -88,33 +88,33 @@ class PorteesTable
                     ->badge()
                     ->color('success')
                     ->placeholder('-'),
-
-                TextColumn::make('poids_total_sevrage_kg')
-                    ->label('Poids total sev.')
-                    ->numeric(decimalPlaces: 2)
-                    ->suffix(' kg')
-                    ->sortable()
-                    ->alignCenter()
-                    ->placeholder('-')
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                TextColumn::make('poids_moyen_sevrage_kg')
-                    ->label('Poids moy. sev.')
-                    ->numeric(decimalPlaces: 2)
-                    ->suffix(' kg')
-                    ->sortable()
-                    ->alignCenter()
-                    ->placeholder('-')
-                    ->toggleable(),
-
-                TextColumn::make('lotDestination.numero_lot')
-                    ->label('Lot destination')
-                    ->searchable()
-                    ->sortable()
-                    ->badge()
-                    ->color('info')
-                    ->placeholder('-')
-                    ->toggleable(),
+//
+//                TextColumn::make('poids_total_sevrage_kg')
+//                    ->label('Poids total sev.')
+//                    ->numeric(decimalPlaces: 2)
+//                    ->suffix(' kg')
+//                    ->sortable()
+//                    ->alignCenter()
+//                    ->placeholder('-')
+//                    ->toggleable(isToggledHiddenByDefault: true),
+//
+//                TextColumn::make('poids_moyen_sevrage_kg')
+//                    ->label('Poids moy. sev.')
+//                    ->numeric(decimalPlaces: 2)
+//                    ->suffix(' kg')
+//                    ->sortable()
+//                    ->alignCenter()
+//                    ->placeholder('-')
+//                    ->toggleable(),
+//
+//                TextColumn::make('lotDestination.numero_lot')
+//                    ->label('Lot destination')
+//                    ->searchable()
+//                    ->sortable()
+//                    ->badge()
+//                    ->color('info')
+//                    ->placeholder('-')
+//                    ->toggleable(),
 
                 TextColumn::make('created_at')
                     ->label('Créé le')
