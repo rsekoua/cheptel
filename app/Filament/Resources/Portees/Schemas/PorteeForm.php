@@ -50,7 +50,7 @@ class PorteeForm
                             ])),
                     ])
                     ->columns(2)
-                    ->columnSpan(2),
+                    ->columnSpan(1),
 
                 Section::make('Mise bas')
                     ->description('Données de la mise bas (naissance des porcelets)')
@@ -190,7 +190,7 @@ class PorteeForm
                             ])),
                     ])
                     ->columns(2)
-                    ->columnSpan(2),
+                    ->columnSpan(1),
 
                 Section::make('Destination')
                     ->description('Lot de destination après sevrage')
@@ -213,7 +213,7 @@ class PorteeForm
                                     ->color('gray'),
                             ])),
                     ])
-                    ->columnSpan(2),
+                    ->columnSpan(1),
 
                 Section::make('Notes')
                     ->description('Observations complémentaires')

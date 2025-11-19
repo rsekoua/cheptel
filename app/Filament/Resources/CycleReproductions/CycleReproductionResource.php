@@ -20,7 +20,7 @@ class CycleReproductionResource extends Resource
 {
     protected static ?string $model = CycleReproduction::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+//    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $navigationLabel = 'Cycles de reproduction';
 

@@ -20,6 +20,7 @@ class SaillieResource extends Resource
     protected static ?string $model = Saillie::class;
 
     protected static string|BackedEnum|null $navigationIcon = null;
+    protected static bool $shouldRegisterNavigation = false;
 
     protected static string|null|\UnitEnum $navigationGroup = 'Reproduction';
 

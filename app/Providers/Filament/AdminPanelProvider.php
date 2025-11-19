@@ -38,7 +38,7 @@ class AdminPanelProvider extends PanelProvider
             ->emailChangeVerification()
             ->topbar(false)
             ->colors([
-                'primary' => Color::Indigo,
+                'primary' => Color::Green,
             ])
             ->userMenu(position: UserMenuPosition::Sidebar)
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')

@@ -21,7 +21,7 @@ class SevrerPorteeAction extends Action
             ->modalHeading('Enregistrer le sevrage')
             ->modalDescription('Saisissez les informations concernant le sevrage de cette portée')
             ->modalSubmitActionLabel('Enregistrer')
-            ->form([
+            ->schema([
                 DatePicker::make('date_sevrage')
                     ->label('Date de sevrage')
                     ->required()

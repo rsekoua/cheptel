@@ -9,6 +9,7 @@ use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Support\Enums\IconPosition;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Builder;
 
 class ListCycleReproductions extends ListRecords
@@ -18,7 +19,11 @@ class ListCycleReproductions extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->icon(Heroicon::Plus)
+                ->color('primary')
+                ->label('')
+                ->size('sm'),
         ];
     }
 
