@@ -20,7 +20,7 @@ class Portee extends Model
         'date_mise_bas',
         'nb_nes_vifs',
         'nb_mort_nes',
-        'nb_momifies',
+        'nb_total',
         'poids_moyen_naissance_g',
         'date_sevrage',
         'nb_sevres',
@@ -28,7 +28,6 @@ class Portee extends Model
         'poids_moyen_sevrage_kg',
         'lot_destination_id',
         'notes',
-        'nb_total',
     ];
 
     protected function casts(): array
