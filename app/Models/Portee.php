@@ -109,4 +109,44 @@ class Portee extends Model
             }
         );
     }
+
+    protected function moisAnneeNaissance(): Attribute
+    {
+        return Attribute::make(
+            get: function (): ?string {
+                if (! $this->date_mise_bas) {
+                    return null;
+                }
+
+                return $this->date_mise_bas->format('mY');
+            }
+        );
+    }
+
+    protected function identificationFormat(): Attribute
+    {
+        return Attribute::make(
+            get: function (): string {
+                $numeroAnimal = $this->animal?->numero_identification ?? 'N/A';
+                $moisAnnee = $this->mois_annee_naissance ?? 'N/A';
+                $nbSevres = $this->nb_sevres ?? 0;
+
+                return "{$numeroAnimal}-{$moisAnnee}-{$nbSevres}";
+            }
+        );
+    }
+
+    public function scopeAvailableForLot(Builder $query, ?string $moisAnnee = null): void
+    {
+        $query->sevrees()
+            ->whereDoesntHave('lots')
+            ->when($moisAnnee, function ($q) use ($moisAnnee) {
+                $q->whereRaw("DATE_FORMAT(date_mise_bas, '%m%Y') = ?", [$moisAnnee]);
+            });
+    }
+
+    public function scopeNotInLot(Builder $query): void
+    {
+        $query->whereDoesntHave('lots');
+    }
 }

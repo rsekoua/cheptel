@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -20,19 +19,9 @@ class Lot extends Model
         'date_creation',
         'nb_animaux_depart',
         'nb_animaux_actuel',
-        'poids_total_depart_kg',
-        'poids_moyen_depart_kg',
-        'poids_total_actuel_kg',
-        'poids_moyen_actuel_kg',
-        'date_derniere_pesee',
-        'salle_id',
         'statut_lot',
-        'plan_alimentation_id',
         'date_sortie',
         'nb_animaux_sortie',
-        'poids_total_sortie_kg',
-        'poids_moyen_sortie_kg',
-        'prix_vente_total',
         'destination_sortie',
         'notes',
     ];
@@ -41,26 +30,8 @@ class Lot extends Model
     {
         return [
             'date_creation' => 'date',
-            'poids_total_depart_kg' => 'decimal:2',
-            'poids_moyen_depart_kg' => 'decimal:2',
-            'poids_total_actuel_kg' => 'decimal:2',
-            'poids_moyen_actuel_kg' => 'decimal:2',
-            'date_derniere_pesee' => 'date',
             'date_sortie' => 'date',
-            'poids_total_sortie_kg' => 'decimal:2',
-            'poids_moyen_sortie_kg' => 'decimal:2',
-            'prix_vente_total' => 'decimal:2',
         ];
-    }
-
-    public function salle(): BelongsTo
-    {
-        return $this->belongsTo(Salle::class);
-    }
-
-    public function planAlimentation(): BelongsTo
-    {
-        return $this->belongsTo(PlanAlimentation::class);
     }
 
     public function portees(): BelongsToMany
@@ -126,27 +97,6 @@ class Lot extends Model
                 $mortalite = $this->nb_animaux_depart - $this->nb_animaux_actuel;
 
                 return round(($mortalite / $this->nb_animaux_depart) * 100, 2);
-            }
-        );
-    }
-
-    protected function gmq(): Attribute
-    {
-        return Attribute::make(
-            get: function (): ?float {
-                if (! $this->poids_moyen_depart_kg || ! $this->poids_moyen_actuel_kg) {
-                    return null;
-                }
-
-                $joursEcoules = $this->date_creation->diffInDays(now());
-
-                if ($joursEcoules === 0) {
-                    return null;
-                }
-
-                $gainTotal = ($this->poids_moyen_actuel_kg - $this->poids_moyen_depart_kg) * 1000;
-
-                return round($gainTotal / $joursEcoules, 0);
             }
         );
     }
