@@ -26,79 +26,77 @@ class AnimalsTable
                     ->html()
                     ->state(function ($record): HtmlString {
                         return new HtmlString(Blade::render('
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <div style="font-size: 1.125rem; font-weight: 700; color: #111827;">{{ $numero }}</div>
-                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                            <div style="display: flex; align-items: center; gap: 12px; padding: 4px 0;">
+                                {{-- Avatar cochon SVG --}}
+                                <div style="width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: {{ $type === "truie" ? "#fdf2f8" : "#eff6ff" }}; border: 2px solid {{ $type === "truie" ? "#fbcfe8" : "#bfdbfe" }};">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width: 36px; height: 36px;">
+                                        <ellipse cx="50" cy="55" rx="35" ry="28" fill="{{ $type === "truie" ? "#F4A3B3" : "#93c5fd" }}"/>
+                                        <circle cx="50" cy="40" r="25" fill="{{ $type === "truie" ? "#F4A3B3" : "#93c5fd" }}"/>
+                                        <ellipse cx="30" cy="22" rx="10" ry="12" fill="{{ $type === "truie" ? "#E88A9A" : "#60a5fa" }}" transform="rotate(-20 30 22)"/>
+                                        <ellipse cx="70" cy="22" rx="10" ry="12" fill="{{ $type === "truie" ? "#E88A9A" : "#60a5fa" }}" transform="rotate(20 70 22)"/>
+                                        <ellipse cx="30" cy="24" rx="5" ry="7" fill="{{ $type === "truie" ? "#D4707F" : "#3b82f6" }}" transform="rotate(-20 30 24)"/>
+                                        <ellipse cx="70" cy="24" rx="5" ry="7" fill="{{ $type === "truie" ? "#D4707F" : "#3b82f6" }}" transform="rotate(20 70 24)"/>
+                                        <ellipse cx="50" cy="48" rx="12" ry="9" fill="{{ $type === "truie" ? "#E88A9A" : "#60a5fa" }}"/>
+                                        <ellipse cx="45" cy="48" rx="3" ry="4" fill="{{ $type === "truie" ? "#D4707F" : "#3b82f6" }}"/>
+                                        <ellipse cx="55" cy="48" rx="3" ry="4" fill="{{ $type === "truie" ? "#D4707F" : "#3b82f6" }}"/>
+                                        <circle cx="40" cy="35" r="5" fill="#2D2D2D"/>
+                                        <circle cx="60" cy="35" r="5" fill="#2D2D2D"/>
+                                        <circle cx="42" cy="33" r="2" fill="#FFFFFF"/>
+                                        <circle cx="62" cy="33" r="2" fill="#FFFFFF"/>
+                                    </svg>
+                                </div>
+
+                                {{-- Infos principales --}}
+                                <div style="flex: 1; min-width: 0;">
                                     <div style="display: flex; align-items: center; gap: 8px;">
-                                        <x-heroicon-o-user style="width: 16px; height: 16px; color: #9ca3af;" />
-                                        <div>
-                                            <span style="font-size: 0.75rem; color: #6b7280;">Type</span>
-                                            <p style="font-size: 0.875rem; color: #111827; margin: 0;">{{ $type }}</p>
-                                        </div>
+                                        <span style="font-size: 1rem; font-weight: 600; color: #111827;">{{ $numero }}</span>
+                                        <span style="display: inline-flex; align-items: center; padding: 2px 8px; font-size: 0.625rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 6px; background-color: {{ $isActif ? "#dcfce7" : "#fef2f2" }}; color: {{ $isActif ? "#166534" : "#991b1b" }};">
+                                            {{ $isActif ? "Actif" : "Inactif" }}
+                                        </span>
                                     </div>
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <x-heroicon-o-tag style="width: 16px; height: 16px; color: #9ca3af;" />
-                                        <div>
-                                            <span style="font-size: 0.75rem; color: #6b7280;">Race</span>
-                                            <p style="font-size: 0.875rem; color: #111827; margin: 0;">{{ $race }}</p>
-                                        </div>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <x-heroicon-o-calendar style="width: 16px; height: 16px; color: #9ca3af;" />
-                                        <div>
-                                            <span style="font-size: 0.75rem; color: #6b7280;">Naissance</span>
-                                            <p style="font-size: 0.875rem; color: #111827; margin: 0;">{{ $naissance }}</p>
-                                        </div>
-                                    </div>
-                                    <div style="display: flex; align-items: center; gap: 8px;">
-                                        <x-heroicon-o-map-pin style="width: 16px; height: 16px; color: #9ca3af;" />
-                                        <div>
-                                            <span style="font-size: 0.75rem; color: #6b7280;">Origine</span>
-                                            <p style="font-size: 0.875rem; color: #111827; margin: 0;">{{ $origine }}</p>
-                                        </div>
+                                    <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px; flex-wrap: wrap;">
+                                        <span style="font-size: 0.75rem; font-weight: 500; color: {{ $type === "truie" ? "#ec4899" : "#3b82f6" }};">{{ ucfirst($type) }}</span>
+                                        <span style="color: #d1d5db;">•</span>
+                                        <span style="font-size: 0.75rem; color: #6b7280;">{{ $race }}</span>
+                                        <span style="color: #d1d5db;">•</span>
+                                        <span style="font-size: 0.75rem; color: #9ca3af;">{{ $naissance }}</span>
                                     </div>
                                 </div>
-                                <div style="padding-top: 4px;">
-                                    <span style="display: inline-flex; align-items: center; padding: 4px 8px; font-size: 0.75rem; font-weight: 500; border-radius: 9999px; background-color: {{ $isActif ? "#dcfce7" : "#fee2e2" }}; color: {{ $isActif ? "#166534" : "#991b1b" }};">
-                                        <x-heroicon-o-check-circle style="width: 14px; height: 14px; margin-right: 4px;" @if(!$isActif) class="hidden" @endif />
-                                        <x-heroicon-o-x-circle style="width: 14px; height: 14px; margin-right: 4px;" @if($isActif) class="hidden" @endif />
-                                        {{ $isActif ? "Actif" : "Inactif" }}
-                                    </span>
-                                </div>
+
+                                {{-- Chevron --}}
+                                <x-heroicon-o-chevron-right style="width: 20px; height: 20px; color: #d1d5db; flex-shrink: 0;" />
                             </div>
                         ', [
                             'numero' => $record->numero_identification,
                             'type' => $record->type_animal,
                             'race' => $record->race?->nom ?? '-',
                             'naissance' => $record->date_naissance?->format('d/m/Y') ?? '-',
-                            'origine' => $record->origine ?? '-',
-                            'statut' => $record->statut_actuel ?? '-',
                             'isActif' => $record->is_actif ?? false,
                         ]));
                     })
                     ->searchable(['numero_identification', 'type_animal', 'origine']),
 
                 // Colonnes visibles uniquement sur desktop
-//                TextColumn::make('date_entree')
-//                    ->label('Entrée')
-//                    ->date()
-//                  //  ->sortable()
-//                    ->visibleFrom('md'),
-//                TextColumn::make('provenance')
-//                    ->searchable()
-//                    ->visibleFrom('md'),
-//                TextColumn::make('numero_mere')
-//                 //   ->toggleable(isToggledHiddenByDefault: true)
-//                    ->searchable()
-//                    ->visibleFrom('md'),
-//                TextColumn::make('numero_pere')
-//                //    ->toggleable(isToggledHiddenByDefault: true)
-//                    ->searchable()
-//                    ->visibleFrom('md'),
-//                TextColumn::make('date_reforme')
-//                    ->date()
-//                  //  ->sortable()
-//                    ->visibleFrom('md'),
+                //                TextColumn::make('date_entree')
+                //                    ->label('Entrée')
+                //                    ->date()
+                //                  //  ->sortable()
+                //                    ->visibleFrom('md'),
+                //                TextColumn::make('provenance')
+                //                    ->searchable()
+                //                    ->visibleFrom('md'),
+                //                TextColumn::make('numero_mere')
+                //                 //   ->toggleable(isToggledHiddenByDefault: true)
+                //                    ->searchable()
+                //                    ->visibleFrom('md'),
+                //                TextColumn::make('numero_pere')
+                //                //    ->toggleable(isToggledHiddenByDefault: true)
+                //                    ->searchable()
+                //                    ->visibleFrom('md'),
+                //                TextColumn::make('date_reforme')
+                //                    ->date()
+                //                  //  ->sortable()
+                //                    ->visibleFrom('md'),
                 //                TextColumn::make('created_at')
                 //                    ->dateTime()
                 //                   // ->sortable()
