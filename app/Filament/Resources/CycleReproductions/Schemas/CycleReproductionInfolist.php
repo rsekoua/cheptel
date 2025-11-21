@@ -13,186 +13,274 @@ class CycleReproductionInfolist
     public static function configure(Schema $schema): Schema
     {
         return $schema
-            ->columns(4)
+            ->columns(2)
             ->components([
-                Section::make('Informations du cycle')
-                    ->description('Informations générales sur le cycle de reproduction')
+                // Section principale: Cycle
+                Section::make('Cycle de reproduction')
                     ->icon(Heroicon::ArrowPath)
                     ->schema([
                         TextEntry::make('animal.numero_identification')
-                            ->label('Animal'),
+                            ->label('Truie')
+                            ->color('danger')
+                            ->weight('bold')
+                            ->size('lg'),
+                        TextEntry::make('saillies')
+                            ->label('Verrat')
+                            ->color('info')
+                            ->weight('bold')
+                            ->size('lg')
+                            ->state(fn ($record) => $record->saillies()->first()?->verrat?->numero_identification ?? '-'),
+                        //                        TextEntry::make('date_premiere_saillie')
+                        //                            ->label('1ère saillie')
+                        //                            ->dateTime('d/m/Y'),
+                        TextEntry::make('date_mise_bas_prevue_formatee')
+                            ->label('Date prévue')
+                            ->tooltip(fn ($record): ?string => $record->date_mise_bas_prevue?->format('d/m/Y'))
+                            ->placeholder('-'),
 
-                        TextEntry::make('numero_cycle')
-                            ->label('Numéro de cycle')
-                            ->numeric(),
-
-                        TextEntry::make('date_debut')
-                            ->label('Date de début du cycle')
-                            ->date('d/m/Y'),
+                        TextEntry::make('date_mise_bas_reelle')
+                            ->label('Date réelle')
+                            ->dateTime('d/m/Y')
+                           // ->tooltip(fn ($record): ?string => $record->date_mise_bas_reelle?->format('d/m/Y'))
+                            ->placeholder('-'),
 
                         TextEntry::make('statut_cycle')
-                            ->label('Statut du cycle')
+                            ->label('Statut')
                             ->badge()
                             ->formatStateUsing(fn (string $state): string => match ($state) {
+                                'en_attente' => 'En attente',
                                 'gestation_en_cours' => 'Gestation en cours',
                                 'mise_bas_effectuee' => 'Mise-bas effectuée',
-                                'echec_gestation' => 'Échec de gestation',
+                                'en_lactation' => 'En lactation',
+                                'termine_succes' => 'Terminé avec succès',
+                                'termine_echec' => 'Terminé avec échec',
                                 default => $state,
                             })
                             ->color(fn (string $state): string => match ($state) {
                                 'gestation_en_cours' => 'warning',
-                                'mise_bas_effectuee' => 'success',
-                                'echec_gestation' => 'danger',
+                                'mise_bas_effectuee', 'termine_succes' => 'success',
+                                'termine_echec' => 'danger',
+                                'en_lactation' => 'info',
                                 default => 'gray',
                             }),
-                    ])
-                    ->columns(2)
-                    ->columnSpan(2),
 
-                Section::make('Diagnostic de gestation')
-                    ->description('Résultats du diagnostic de gestation')
+                        //                        TextEntry::make('numero_cycle')
+                        //                            ->label('N° cycle'),
+
+                    ])
+                    ->columns([
+                        'default' => 2,
+                        'lg' => 4,
+                    ])
+                    ->columnSpan(1),
+
+                //
+                //                // Section Mise-bas
+                //                Section::make('Mise-bas')
+                //                    ->icon(Heroicon::Cake)
+                //                    ->schema([
+                //                        TextEntry::make('date_mise_bas_prevue')
+                //                            ->label('Date prévue')
+                //                            ->date('d/m/Y')
+                //                            ->placeholder('-'),
+                //
+                //                        TextEntry::make('date_mise_bas_reelle')
+                //                            ->label('Date réelle')
+                //                            ->date('d/m/Y')
+                //                            ->placeholder('-'),
+                //                    ])
+                //                    ->columns([
+                //                        'default' => 2,
+                //                    ])
+                //                    ->columnSpan(1)
+                //                    ->visible(fn ($record): bool => ! empty($record->date_mise_bas_prevue) && $record->statut_cycle !== 'termine_echec'),
+
+                // Section Portée (visible si succès)
+                Section::make('Portée')
+                    ->icon(Heroicon::UserGroup)
+                    ->schema([
+                        TextEntry::make('portee.nb_total')
+                            ->label('Total nés')
+                            ->numeric()
+                            ->suffix(' porcelets')
+                            ->color('success')
+                            ->weight('bold')
+                            ->size('lg'),
+                        //
+                        //                        TextEntry::make('portee.nb_nes_vifs')
+                        //                            ->label('Nés vifs')
+                        //                            ->numeric()
+                        //                            ->color('success'),
+
+                        TextEntry::make('portee.nb_mort_nes')
+                            ->label('Mort-nés')
+                            ->numeric()
+                            ->color('danger'),
+
+                        //                        TextEntry::make('portee.poids_moyen_naissance_g')
+                        //                            ->label('Poids moyen')
+                        //                            ->numeric()
+                        //                            ->suffix(' g'),
+
+                        TextEntry::make('portee.date_sevrage')
+                            ->label('Date sevrage')
+                            ->date('d/m/Y')
+                            ->placeholder('Non sevré'),
+
+                        TextEntry::make('portee.nb_sevres')
+                            ->label('Nb sevrés')
+                            ->numeric()
+                            ->placeholder('-'),
+                        //
+                        //                        TextEntry::make('portee.poids_moyen_sevrage_kg')
+                        //                            ->label('Poids moyen sevrage')
+                        //                            ->numeric()
+                        //                            ->suffix(' kg')
+                        //                            ->placeholder('-'),
+                        //
+                        //                        TextEntry::make('portee.lotDestination.numero')
+                        //                            ->label('Lot destination')
+                        //                            ->placeholder('-'),
+                    ])
+                    ->columns([
+                        'default' => 2,
+                        'md' => 4,
+                    ])
+                    ->columnSpanFull()
+                    ->visible(fn ($record): bool => $record->statut_cycle === 'termine_succes' || 'en_lactation' && $record->portee !== null),
+
+                // Section Diagnostic
+                Section::make('Diagnostic')
                     ->icon(Heroicon::Beaker)
                     ->schema([
+                        TextEntry::make('date_debut')
+                            ->label('Début du cycle')
+                            ->date('d/m/Y'),
                         TextEntry::make('date_diagnostic')
-                            ->label('Date du diagnostic')
+                            ->label('Date')
                             ->date('d/m/Y')
                             ->placeholder('-'),
 
                         TextEntry::make('resultat_diagnostic')
-                            ->label('Résultat du diagnostic')
+                            ->label('Résultat')
                             ->badge()
-                            ->formatStateUsing(fn (string $state): string => match ($state) {
-                                'positif' => 'Positif (gestante)',
-                                'negatif' => 'Négatif (vide)',
-                                default => $state,
+                            ->formatStateUsing(fn (?string $state): string => match ($state) {
+                                'positif' => 'Gestante',
+                                'negatif' => 'Vide',
+                                default => '-',
                             })
-                            ->color(fn (string $state): string => match ($state) {
+                            ->color(fn (?string $state): string => match ($state) {
                                 'positif' => 'success',
                                 'negatif' => 'danger',
                                 default => 'gray',
                             }),
                     ])
-                    ->columns(2)
-                    ->columnSpan(1)
-                    ->visible(fn ($record): bool => ! empty($record->date_premiere_saillie)),
-
-                Section::make('Mise-bas')
-                    ->description('Dates prévisionnelle et réelle de mise-bas')
-                    ->icon(Heroicon::Cake)
-                    ->schema([
-                        TextEntry::make('date_mise_bas_prevue')
-                            ->label('Date de mise-bas prévue')
-                            ->date('d/m/Y')
-                            ->placeholder('-'),
-                           // ->helperText('Calculée automatiquement (saillie + 114 jours)'),
-
-                        TextEntry::make('date_mise_bas_reelle')
-                            ->label('Date de mise-bas réelle')
-                            ->date('d/m/Y')
-                            ->placeholder('-'),
+                    ->columns([
+                        'default' => 2,
                     ])
-                    ->columns(2)
                     ->columnSpan(1)
-                    ->visible(fn ($record): bool => ! empty($record->date_premiere_saillie)),
+                    ->visible(fn ($record): bool => ! empty($record->date_diagnostic)),
 
-                Section::make('Saillies / Inséminations')
-                    //->description('Liste des saillies effectuées')
+                // Section Liste des saillies (collapsible)
+                //                Section::make('Détail des saillies')
+                //                    ->icon(Heroicon::ListBullet)
+                //                    ->schema([
+                //                        RepeatableEntry::make('saillies')
+                //                            ->label('')
+                //                            ->schema([
+                //                                TextEntry::make('type')
+                //                                    ->label('Type')
+                //                                    ->badge()
+                //                                    ->formatStateUsing(fn (string $state): string => $state)
+                //                                    ->color(fn (string $state): string => match ($state) {
+                //                                        'IA' => 'info',
+                //                                        'MN' => 'success',
+                //                                        default => 'gray',
+                //                                    }),
+                //
+                //                                TextEntry::make('date_heure')
+                //                                    ->label('Date')
+                //                                    ->dateTime('d/m/Y H:i'),
+                //
+                //                                TextEntry::make('verrat.numero_identification')
+                //                                    ->label('Verrat')
+                //                                    ->placeholder('-'),
+                //
+                //                                TextEntry::make('semence_lot_numero')
+                //                                    ->label('Lot semence')
+                //                                    ->placeholder('-'),
+                //                            ])
+                //                            ->columns(4)
+                //                            ->columnSpanFull(),
+                //                    ])
+                //                    ->columnSpanFull()
+                //                    ->collapsible()
+                //                    ->collapsed()
+                //                    ->visible(fn ($record): bool => $record->saillies()->count() > 1),
+
+                // Section Saillies résumé
+                Section::make('Saillie')
                     ->icon(Heroicon::Heart)
                     ->schema([
-//                        TextEntry::make('date_premiere_saillie')
-//                            ->label('Date de la première saillie')
-//                            ->dateTime('d/m/Y H:i')
-//                            ->placeholder('-'),
+                        //                        TextEntry::make('saillies')
+                        //                            ->label('Verrat')
+                        //                            ->color('info')
+                        //                            ->weight('bold')
+                        //                            ->size('lg')
+                        //                            ->state(fn ($record) => $record->saillies()->first()?->verrat?->numero_identification ?? '-'),
 
-//                        TextEntry::make('type_saillie')
-//                            ->label('Type principal de saillie')
-//                            ->badge()
-//                            ->formatStateUsing(fn (?string $state): string => match ($state) {
-//                                'IA' => 'Insémination Artificielle',
-//                                'MN' => 'Monte Naturelle',
-//                                default => '-',
-//                            })
-//                            ->color(fn (?string $state): string => match ($state) {
-//                                'IA' => 'info',
-//                                'MN' => 'success',
-//                                default => 'gray',
-//                            })
-//                            ->placeholder('-'),
+                        TextEntry::make('saillies')
+                            ->label('Type')
+                            ->badge()
+                            ->state(fn ($record) => $record->saillies()->first()?->type)
+                            ->formatStateUsing(fn (?string $state): string => match ($state) {
+                                'IA' => 'Insémination',
+                                'MN' => 'Monte naturelle',
+                                default => '-',
+                            })
+                            ->color(fn (?string $state): string => match ($state) {
+                                'IA' => 'info',
+                                'MN' => 'success',
+                                default => 'gray',
+                            }),
 
-                        RepeatableEntry::make('saillies')
-                            ->label('Liste des saillies effectuées')
-                            ->schema([
-                                TextEntry::make('type')
-                                    ->label('Type')
-                                    ->badge()
-                                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                                        'IA' => 'IA',
-                                        'MN' => 'MN',
-                                        default => $state,
-                                    })
-                                    ->color(fn (string $state): string => match ($state) {
-                                        'IA' => 'info',
-                                        'MN' => 'success',
-                                        default => 'gray',
-                                    }),
+                        TextEntry::make('date_premiere_saillie')
+                            ->label('1ère saillie')
+                            ->dateTime('d/m/Y'),
 
-                                TextEntry::make('date_heure')
-                                    ->label('Date et heure')
-                                    ->dateTime('d/m/Y H:i'),
-
-                                TextEntry::make('verrat.numero_identification')
-                                    ->label('Verrat')
-                                    ->placeholder('-'),
-
-                                TextEntry::make('semence_lot_numero')
-                                    ->label('N° lot de semence')
-                                    ->placeholder('-'),
-
-                                TextEntry::make('intervenant')
-                                    ->label('Intervenant')
-                                    ->placeholder('-'),
-                            ])
-                            ->columns(5)
-                            ->columnSpanFull(),
+                        TextEntry::make('saillies_count')
+                            ->label('Nb saillies')
+                            ->state(fn ($record) => $record->saillies()->count())
+                            ->badge()
+                            ->color('gray'),
                     ])
-                    ->columns(2)
-                    ->columnSpan(4)
                     ->collapsible()
+                    ->collapsed()
+                    ->columns([
+                        'default' => 2,
+                    ])
+                    ->columnSpan(1)
                     ->visible(fn ($record): bool => $record->saillies()->exists()),
 
-                Section::make('Informations complémentaires')
-                    ->description('Motif d\'échec et notes')
+                // Section Notes
+                Section::make('Notes')
                     ->icon(Heroicon::DocumentText)
                     ->schema([
                         TextEntry::make('motif_echec')
                             ->label('Motif d\'échec')
                             ->placeholder('-')
                             ->columnSpanFull()
-                            ->visible(fn ($record): bool => $record->statut_cycle === 'echec_gestation'),
+                            ->visible(fn ($record): bool => $record->statut_cycle === 'termine_echec'),
 
                         TextEntry::make('notes')
-                            ->label('Notes')
-                            ->placeholder('-')
+                            ->label('Observations')
+                            ->placeholder('Aucune note')
                             ->columnSpanFull(),
                     ])
                     ->columnSpanFull()
-                    ->collapsed(),
-
-//                Section::make('Horodatage')
-//                    ->description('Dates de création et modification')
-//                    ->icon(Heroicon::Clock)
-//                    ->schema([
-//                        TextEntry::make('created_at')
-//                            ->label('Créé le')
-//                            ->dateTime('d/m/Y H:i'),
-//
-//                        TextEntry::make('updated_at')
-//                            ->label('Modifié le')
-//                            ->dateTime('d/m/Y H:i'),
-//                    ])
-//                    ->columns(2)
-//                    ->columnSpan(2)
-//                    ->collapsed(),
+                    ->collapsible()
+                    ->collapsed()
+                    ->visible(fn ($record): bool => ! empty($record->notes) || $record->statut_cycle === 'termine_echec'),
             ]);
     }
 }

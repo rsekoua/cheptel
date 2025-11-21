@@ -3,13 +3,11 @@
 @endphp
 
 <x-filament-widgets::widget>
-    <a href="{{ $data['url'] }}" style="text-decoration: none; display: block;">
+    <a href="{{ $data['url'] }}" class="block">
         <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 16px; padding: 20px; color: white; position: relative; overflow: hidden; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);">
-            {{-- Background pattern --}}
             <div style="position: absolute; top: -20px; right: -20px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
             <div style="position: absolute; bottom: -40px; right: 40px; width: 80px; height: 80px; background: rgba(255,255,255,0.08); border-radius: 50%;"></div>
 
-            {{-- Content --}}
             <div style="position: relative; z-index: 1;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     <div>

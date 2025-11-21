@@ -15,7 +15,7 @@ class MiseBasAction extends Action
     public static function make(?string $name = null): static
     {
         return parent::make($name ?? 'mise_bas')
-            ->label('Mise bas')
+            ->label('')
             ->icon(Heroicon::Cake)
             ->modalWidth('sm')
             ->color('success')

@@ -70,7 +70,7 @@ class AnimalsTable
                             'numero' => $record->numero_identification,
                             'type' => $record->type_animal,
                             'race' => $record->race?->nom ?? '-',
-                            'naissance' => $record->date_naissance?->format('d/m/Y') ?? '-',
+                            'naissance' => $record->age_formate ?? '-',
                             'isActif' => $record->is_actif ?? false,
                         ]));
                     })

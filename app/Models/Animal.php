@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -123,5 +125,33 @@ class Animal extends Model
     public function ageEnMois(): int
     {
         return (int) floor($this->age() / 30);
+    }
+
+    public static function formatAge(?Carbon $dateNaissance): ?string
+    {
+        if (! $dateNaissance) {
+            return null;
+        }
+
+        $now = now();
+        $diff = $dateNaissance->diff($now);
+
+        $parts = [];
+
+        if ($diff->y > 0) {
+            $parts[] = $diff->y.' an'.($diff->y > 1 ? 's' : '');
+        }
+        if ($diff->m > 0) {
+            $parts[] = str_pad($diff->m, 2, '0', STR_PAD_LEFT).' mois';
+        }
+
+        return empty($parts) ? 'Moins d\'un mois' : implode(' ', $parts);
+    }
+
+    protected function ageFormate(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => self::formatAge($this->date_naissance)
+        );
     }
 }

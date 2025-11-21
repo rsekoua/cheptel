@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -99,4 +101,48 @@ class CycleReproduction extends Model
     {
         return $this->saillies()->count();
     }
+
+    public static function formatDateRelative(?Carbon $date): ?string
+    {
+        if (! $date) {
+            return null;
+        }
+
+        $now = now()->startOfDay();
+        $target = $date->copy()->startOfDay();
+
+        if ($target->isPast() && ! $target->isToday()) {
+            return 'Dépassé';
+        }
+
+        if ($target->isToday()) {
+            return "Aujourd'hui";
+        }
+
+        $diff = $now->diff($target);
+        $parts = [];
+
+        if ($diff->m > 0) {
+            $parts[] = str_pad($diff->m, 2, '0', STR_PAD_LEFT).' mois';
+        }
+        if ($diff->d > 0) {
+            $parts[] = $diff->d.' j';
+        }
+
+        return empty($parts) ? "Aujourd'hui" : implode(' ', $parts);
+    }
+
+    protected function dateMiseBasPrevueFormatee(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => self::formatDateRelative($this->date_mise_bas_prevue)
+        );
+    }
+
+//    protected function dateMiseBasReelleFormatee(): Attribute
+//    {
+//        return Attribute::make(
+//            get: fn () => self::formatDateRelative($this->date_mise_bas_reelle)
+//        );
+//    }
 }

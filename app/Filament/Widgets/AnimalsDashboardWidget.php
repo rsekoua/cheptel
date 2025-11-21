@@ -8,7 +8,8 @@ use Filament\Widgets\Widget;
 
 class AnimalsDashboardWidget extends Widget
 {
-    protected string $view = 'filament.widgets.animals-dashboard-widget';
+    protected  string $view = 'filament.widgets.animals-dashboard-widget';
+
 
     protected int|string|array $columnSpan = 1;
 
@@ -19,6 +20,7 @@ class AnimalsDashboardWidget extends Widget
             'truies' => Animal::where('is_actif', true)->where('type_animal', 'truie')->count(),
             'verrats' => Animal::where('is_actif', true)->where('type_animal', 'verrat')->count(),
             'url' => AnimalResource::getUrl('index'),
+
         ];
     }
 }
