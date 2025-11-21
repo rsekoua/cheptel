@@ -65,7 +65,7 @@ class AnimalResource extends Resource
             'index' => ListAnimals::route('/'),
             'create' => CreateAnimal::route('/create'),
             //            'view' => ViewAnimal::route('/{record}'),
-            'edit' => EditAnimal::route('/{record}/edit'),
+            //'edit' => EditAnimal::route('/{record}/edit'),
         ];
     }
 

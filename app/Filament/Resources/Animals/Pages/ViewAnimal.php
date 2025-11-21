@@ -10,6 +10,11 @@ class ViewAnimal extends ViewRecord
 {
     protected static string $resource = AnimalResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Détails : '.$this->record->numero_identification;
+    }
+
     protected function getHeaderActions(): array
     {
         return [

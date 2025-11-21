@@ -17,12 +17,13 @@ class MiseBasAction extends Action
         return parent::make($name ?? 'mise_bas')
             ->label('Mise bas')
             ->icon(Heroicon::Cake)
+            ->modalWidth('sm')
             ->color('success')
             ->visible(fn ($record): bool => $record->statut_cycle === 'gestation_en_cours' && ! $record->portee)
             ->modalHeading('Enregistrer la mise bas')
             ->modalDescription('Saisissez les informations concernant la mise bas de cette portée')
             ->modalSubmitActionLabel('Enregistrer')
-            ->form([
+            ->Schema([
                 DateTimePicker::make('date_mise_bas')
                     ->label('Date et heure de mise bas')
                     ->required()
@@ -65,12 +66,12 @@ class MiseBasAction extends Action
                     ->dehydrated()
                     ->default(0),
 
-                TextInput::make('poids_moyen_naissance_g')
-                    ->label('Poids moyen à la naissance (grammes)')
-                    ->numeric()
-                    ->minValue(0)
-                    ->suffix('g')
-                    ->helperText('Poids moyen d\'un porcelet à la naissance'),
+//                TextInput::make('poids_moyen_naissance_g')
+//                    ->label('Poids moyen à la naissance (grammes)')
+//                    ->numeric()
+//                    ->minValue(0)
+//                    ->suffix('g')
+//                    ->helperText('Poids moyen d\'un porcelet à la naissance'),
 
                 Textarea::make('notes')
                     ->label('Notes')

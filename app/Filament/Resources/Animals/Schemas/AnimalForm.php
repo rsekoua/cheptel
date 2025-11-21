@@ -19,12 +19,18 @@ class AnimalForm
     public static function configure(Schema $schema): Schema
     {
         return $schema
-            ->columns(2)
+            ->columns([
+                'default' => 1,
+                'md' => 2,
+            ])
             ->components([
                 Section::make('Informations générales')
                     ->description('Identification et caractéristiques de l\'animal')
                     ->icon(Heroicon::Identification)
-                    ->columns(2)
+                    ->columns([
+                        'default' => 1,
+                        'sm' => 2,
+                    ])
                     ->schema([
                         TextInput::make('numero_identification')
                             ->label('Numéro d\'identification')
@@ -107,6 +113,10 @@ class AnimalForm
                 Section::make('Origine et généalogie')
                     ->description('Provenance et parents de l\'animal')
                     ->icon(Heroicon::MapPin)
+                    ->columns([
+                        'default' => 1,
+                        'sm' => 2,
+                    ])
                     ->schema([
                         DatePicker::make('date_naissance')
                             ->label('Date de naissance')
@@ -183,13 +193,16 @@ class AnimalForm
                                     ->tooltip('Numéro d\'identification du père')
                                     ->color('gray'),
                             ])),
-                    ])
-                    ->columns(2),
+                    ]),
                 // ->columnSpan(2),
 
                 Section::make('Réforme')
                     ->description('Informations sur la sortie de l\'animal')
                     ->icon(Heroicon::ArchiveBox)
+                    ->columns([
+                        'default' => 1,
+                        'sm' => 2,
+                    ])
                     ->schema([
                         DatePicker::make('date_reforme')
                             ->label('Date de réforme')
@@ -212,8 +225,6 @@ class AnimalForm
                                     ->color('gray'),
                             ])),
                     ])
-                    ->columns(2)
-                   // ->columnSpan(2)
                     ->collapsed(),
 
                 Section::make('Notes additionnelles')

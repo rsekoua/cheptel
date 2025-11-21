@@ -13,6 +13,11 @@ class EditAnimal extends EditRecord
 {
     protected static string $resource = AnimalResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Modifier : '.$this->record->numero_identification;
+    }
+
     protected function getHeaderActions(): array
     {
         return [

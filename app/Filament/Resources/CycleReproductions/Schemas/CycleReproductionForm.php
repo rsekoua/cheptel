@@ -36,10 +36,12 @@ class CycleReproductionForm
                                         return $query;
                                     }
 
-                                    // Filtrer pour afficher uniquement les animaux sans cycle actif
-                                    return $query->whereDoesntHave('cyclesReproduction', function ($query) {
-                                        $query->whereNotIn('statut_cycle', ['termine_succes', 'termine_echec']);
-                                    });
+                                    // Filtrer pour afficher uniquement les animaux actifs et sans cycle actif
+                                    return $query
+                                        ->where('is_actif', true)
+                                        ->whereDoesntHave('cyclesReproduction', function ($query) {
+                                            $query->whereNotIn('statut_cycle', ['termine_succes', 'termine_echec']);
+                                        });
                                 }
                             )
                             ->searchable()
@@ -49,7 +51,7 @@ class CycleReproductionForm
                             ->required()
                             ->afterLabel(Schema::start([
                                 Icon::make(Heroicon::QuestionMarkCircle)
-                                    ->tooltip('Animal concerné par ce cycle')
+                                    ->tooltip('Animal concerné par ce cycle (uniquement animaux actifs)')
                                     ->color('gray'),
                             ])),
 

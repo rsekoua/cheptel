@@ -13,7 +13,7 @@ class CycleReproductionInfolist
     public static function configure(Schema $schema): Schema
     {
         return $schema
-            ->columns(2)
+            ->columns(4)
             ->components([
                 Section::make('Informations du cycle')
                     ->description('Informations générales sur le cycle de reproduction')
@@ -49,32 +49,78 @@ class CycleReproductionInfolist
                     ->columns(2)
                     ->columnSpan(2),
 
+                Section::make('Diagnostic de gestation')
+                    ->description('Résultats du diagnostic de gestation')
+                    ->icon(Heroicon::Beaker)
+                    ->schema([
+                        TextEntry::make('date_diagnostic')
+                            ->label('Date du diagnostic')
+                            ->date('d/m/Y')
+                            ->placeholder('-'),
+
+                        TextEntry::make('resultat_diagnostic')
+                            ->label('Résultat du diagnostic')
+                            ->badge()
+                            ->formatStateUsing(fn (string $state): string => match ($state) {
+                                'positif' => 'Positif (gestante)',
+                                'negatif' => 'Négatif (vide)',
+                                default => $state,
+                            })
+                            ->color(fn (string $state): string => match ($state) {
+                                'positif' => 'success',
+                                'negatif' => 'danger',
+                                default => 'gray',
+                            }),
+                    ])
+                    ->columns(2)
+                    ->columnSpan(1)
+                    ->visible(fn ($record): bool => ! empty($record->date_premiere_saillie)),
+
+                Section::make('Mise-bas')
+                    ->description('Dates prévisionnelle et réelle de mise-bas')
+                    ->icon(Heroicon::Cake)
+                    ->schema([
+                        TextEntry::make('date_mise_bas_prevue')
+                            ->label('Date de mise-bas prévue')
+                            ->date('d/m/Y')
+                            ->placeholder('-'),
+                           // ->helperText('Calculée automatiquement (saillie + 114 jours)'),
+
+                        TextEntry::make('date_mise_bas_reelle')
+                            ->label('Date de mise-bas réelle')
+                            ->date('d/m/Y')
+                            ->placeholder('-'),
+                    ])
+                    ->columns(2)
+                    ->columnSpan(1)
+                    ->visible(fn ($record): bool => ! empty($record->date_premiere_saillie)),
+
                 Section::make('Saillies / Inséminations')
-                    ->description('Liste des saillies effectuées')
+                    //->description('Liste des saillies effectuées')
                     ->icon(Heroicon::Heart)
                     ->schema([
-                        TextEntry::make('date_premiere_saillie')
-                            ->label('Date de la première saillie')
-                            ->dateTime('d/m/Y H:i')
-                            ->placeholder('-'),
+//                        TextEntry::make('date_premiere_saillie')
+//                            ->label('Date de la première saillie')
+//                            ->dateTime('d/m/Y H:i')
+//                            ->placeholder('-'),
 
-                        TextEntry::make('type_saillie')
-                            ->label('Type principal de saillie')
-                            ->badge()
-                            ->formatStateUsing(fn (?string $state): string => match ($state) {
-                                'IA' => 'Insémination Artificielle',
-                                'MN' => 'Monte Naturelle',
-                                default => '-',
-                            })
-                            ->color(fn (?string $state): string => match ($state) {
-                                'IA' => 'info',
-                                'MN' => 'success',
-                                default => 'gray',
-                            })
-                            ->placeholder('-'),
+//                        TextEntry::make('type_saillie')
+//                            ->label('Type principal de saillie')
+//                            ->badge()
+//                            ->formatStateUsing(fn (?string $state): string => match ($state) {
+//                                'IA' => 'Insémination Artificielle',
+//                                'MN' => 'Monte Naturelle',
+//                                default => '-',
+//                            })
+//                            ->color(fn (?string $state): string => match ($state) {
+//                                'IA' => 'info',
+//                                'MN' => 'success',
+//                                default => 'gray',
+//                            })
+//                            ->placeholder('-'),
 
                         RepeatableEntry::make('saillies')
-                            ->label('Détails des saillies')
+                            ->label('Liste des saillies effectuées')
                             ->schema([
                                 TextEntry::make('type')
                                     ->label('Type')
@@ -106,58 +152,13 @@ class CycleReproductionInfolist
                                     ->label('Intervenant')
                                     ->placeholder('-'),
                             ])
-                            ->columns(3)
+                            ->columns(5)
                             ->columnSpanFull(),
                     ])
                     ->columns(2)
-                    ->columnSpan(2)
+                    ->columnSpan(4)
+                    ->collapsible()
                     ->visible(fn ($record): bool => $record->saillies()->exists()),
-
-                Section::make('Diagnostic de gestation')
-                    ->description('Résultats du diagnostic de gestation')
-                    ->icon(Heroicon::Beaker)
-                    ->schema([
-                        TextEntry::make('date_diagnostic')
-                            ->label('Date du diagnostic')
-                            ->date('d/m/Y')
-                            ->placeholder('-'),
-
-                        TextEntry::make('resultat_diagnostic')
-                            ->label('Résultat du diagnostic')
-                            ->badge()
-                            ->formatStateUsing(fn (string $state): string => match ($state) {
-                                'positif' => 'Positif (gestante)',
-                                'negatif' => 'Négatif (vide)',
-                                default => $state,
-                            })
-                            ->color(fn (string $state): string => match ($state) {
-                                'positif' => 'success',
-                                'negatif' => 'danger',
-                                default => 'gray',
-                            }),
-                    ])
-                    ->columns(2)
-                    ->columnSpan(2)
-                    ->visible(fn ($record): bool => ! empty($record->date_premiere_saillie)),
-
-                Section::make('Mise-bas')
-                    ->description('Dates prévisionnelle et réelle de mise-bas')
-                    ->icon(Heroicon::Cake)
-                    ->schema([
-                        TextEntry::make('date_mise_bas_prevue')
-                            ->label('Date de mise-bas prévue')
-                            ->date('d/m/Y')
-                            ->placeholder('-')
-                            ->helperText('Calculée automatiquement (saillie + 114 jours)'),
-
-                        TextEntry::make('date_mise_bas_reelle')
-                            ->label('Date de mise-bas réelle')
-                            ->date('d/m/Y')
-                            ->placeholder('-'),
-                    ])
-                    ->columns(2)
-                    ->columnSpan(2)
-                    ->visible(fn ($record): bool => ! empty($record->date_premiere_saillie)),
 
                 Section::make('Informations complémentaires')
                     ->description('Motif d\'échec et notes')
@@ -174,24 +175,24 @@ class CycleReproductionInfolist
                             ->placeholder('-')
                             ->columnSpanFull(),
                     ])
-                    ->columnSpan(2)
+                    ->columnSpanFull()
                     ->collapsed(),
 
-                Section::make('Horodatage')
-                    ->description('Dates de création et modification')
-                    ->icon(Heroicon::Clock)
-                    ->schema([
-                        TextEntry::make('created_at')
-                            ->label('Créé le')
-                            ->dateTime('d/m/Y H:i'),
-
-                        TextEntry::make('updated_at')
-                            ->label('Modifié le')
-                            ->dateTime('d/m/Y H:i'),
-                    ])
-                    ->columns(2)
-                    ->columnSpan(2)
-                    ->collapsed(),
+//                Section::make('Horodatage')
+//                    ->description('Dates de création et modification')
+//                    ->icon(Heroicon::Clock)
+//                    ->schema([
+//                        TextEntry::make('created_at')
+//                            ->label('Créé le')
+//                            ->dateTime('d/m/Y H:i'),
+//
+//                        TextEntry::make('updated_at')
+//                            ->label('Modifié le')
+//                            ->dateTime('d/m/Y H:i'),
+//                    ])
+//                    ->columns(2)
+//                    ->columnSpan(2)
+//                    ->collapsed(),
             ]);
     }
 }

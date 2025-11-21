@@ -8,4 +8,6 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateAnimal extends CreateRecord
 {
     protected static string $resource = AnimalResource::class;
+
+    protected static ?string $title = 'Nouvel animal';
 }
