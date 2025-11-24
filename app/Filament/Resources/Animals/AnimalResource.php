@@ -44,7 +44,8 @@ class AnimalResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return AnimalsTable::configure($table);
+        return AnimalsTable::configure($table)
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with('race'));
     }
 
     public static function getRelations(): array

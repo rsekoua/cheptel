@@ -52,7 +52,7 @@ class ListCycleReproductions extends ListRecords
 
     public function getTabs(): array
     {
-        $nombrePorcelets = Portee::all()->sum(fn (Portee $portee) => $portee->nb_total);
+        $nombrePorcelets = Portee::sum('nb_total');
 
         return [
             'Tous' => Tab::make(),

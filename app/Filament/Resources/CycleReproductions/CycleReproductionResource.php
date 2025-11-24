@@ -15,12 +15,13 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class CycleReproductionResource extends Resource
 {
     protected static ?string $model = CycleReproduction::class;
 
-//    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    //    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $navigationLabel = 'Cycles de reproduction';
 
@@ -44,7 +45,13 @@ class CycleReproductionResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return CycleReproductionsTable::configure($table);
+        return CycleReproductionsTable::configure($table)
+            ->modifyQueryUsing(fn (Builder $query): Builder => $query->with([
+                'animal',
+                'saillies' => fn ($q) => $q->orderBy('date_heure')->limit(1),
+                'saillies.verrat',
+                'portee',
+            ]));
     }
 
     public static function getRelations(): array

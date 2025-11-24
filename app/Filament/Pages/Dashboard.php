@@ -23,7 +23,6 @@ class Dashboard extends BaseDashboard
         return [
             AnimalsDashboardWidget::class,
             AnimalsDashboardWidget::class,
-            AnimalsDashboardWidget::class,
         ];
     }
 

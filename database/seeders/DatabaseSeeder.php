@@ -2,19 +2,21 @@
 
 namespace Database\Seeders;
 
+use App\Models\Aliment;
 use App\Models\Animal;
 use App\Models\CycleReproduction;
+use App\Models\DetailPreparation;
 use App\Models\Lot;
+use App\Models\MouvementAliment;
 use App\Models\Portee;
+use App\Models\PreparationAliment;
 use App\Models\Race;
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
 
     /**
      * Seed the application's database.
@@ -100,5 +102,92 @@ class DatabaseSeeder extends Seeder
         // //                }
         // //            }
         //        });
+
+        // === GESTION DES ALIMENTS ===
+
+        // Créer des aliments avec des noms uniques
+        $aliments = collect([
+            ['nom' => 'Maïs grain', 'poids' => 50, 'seuil' => 500, 'description' => 'Céréale riche en énergie'],
+            ['nom' => 'Tourteau de soja', 'poids' => 40, 'seuil' => 400, 'description' => 'Source de protéines'],
+            ['nom' => 'Son de blé', 'poids' => 30, 'seuil' => 300, 'description' => 'Riche en fibres'],
+            ['nom' => 'CMV (Complément Minéral Vitaminé)', 'poids' => 25, 'seuil' => 200, 'description' => 'Vitamines et minéraux'],
+            ['nom' => 'Farine de poisson', 'poids' => 25, 'seuil' => 250, 'description' => 'Protéines animales'],
+        ])->map(fn ($data) => Aliment::create([
+            'nom' => $data['nom'],
+            'description' => $data['description'],
+            'poids_sac_standard' => $data['poids'],
+            'seuil_alerte' => $data['seuil'],
+            'actif' => true,
+        ]));
+
+        $user = User::first();
+
+        // Créer des achats pour chaque aliment
+        $aliments->each(function ($aliment) use ($user) {
+            $nombreSacs = rand(10, 30);
+            $poidsSac = $aliment->poids_sac_standard;
+            $prixSac = rand(8000, 15000);
+
+            MouvementAliment::create([
+                'aliment_id' => $aliment->id,
+                'type_mouvement' => 'achat',
+                'type_stock' => 'entrepot',
+                'nombre_sacs' => $nombreSacs,
+                'poids_kg' => $nombreSacs * $poidsSac,
+                'prix_unitaire_sac' => $prixSac,
+                'cout_total' => $nombreSacs * $prixSac,
+                'date_mouvement' => now()->subDays(rand(1, 10)),
+                'reference' => 'ACH-'.rand(1000, 9999),
+                'user_id' => $user->id,
+            ]);
+        });
+
+        // Créer quelques transferts vers la zone de préparation
+        $aliments->random(3)->each(function ($aliment) use ($user) {
+            $poidsTransfert = rand(100, 300);
+
+            MouvementAliment::create([
+                'aliment_id' => $aliment->id,
+                'type_mouvement' => 'transfert_entree',
+                'type_stock' => 'preparation',
+                'nombre_sacs' => 0,
+                'poids_kg' => $poidsTransfert,
+                'date_mouvement' => now()->subDays(rand(1, 5)),
+                'notes' => 'Transfert pour préparation',
+                'user_id' => $user->id,
+            ]);
+        });
+
+        // Créer une préparation d'aliment composé
+        $preparation = PreparationAliment::create([
+            'nom' => 'Aliment porcelets démarrage',
+            'date_preparation' => now()->subDays(2),
+            'notes' => 'Formule spéciale pour porcelets sevrés',
+            'user_id' => $user->id,
+        ]);
+
+        // Ajouter les détails de la préparation
+        $stockEntrepot = \App\Models\StockAliment::where('type_stock', 'entrepot')->get();
+
+        if ($stockEntrepot->count() >= 3) {
+            collect([
+                ['aliment' => $stockEntrepot[0]->aliment, 'quantite' => 50],
+                ['aliment' => $stockEntrepot[1]->aliment, 'quantite' => 30],
+                ['aliment' => $stockEntrepot[3]->aliment, 'quantite' => 5],
+            ])->each(function ($detail) use ($preparation) {
+                $stock = \App\Models\StockAliment::where('aliment_id', $detail['aliment']->id)
+                    ->where('type_stock', 'entrepot')
+                    ->first();
+
+                if ($stock && $stock->cout_moyen_kg > 0) {
+                    DetailPreparation::create([
+                        'preparation_aliment_id' => $preparation->id,
+                        'aliment_id' => $detail['aliment']->id,
+                        'quantite_kg' => $detail['quantite'],
+                        'cout_unitaire_kg' => $stock->cout_moyen_kg,
+                    ]);
+                }
+            });
+        }
     }
 }

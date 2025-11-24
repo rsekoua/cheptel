@@ -81,7 +81,11 @@ class AnimalObserver
     protected function aCycleEnCours(Animal $animal): bool
     {
         return CycleReproduction::where('animal_id', $animal->id)
-            ->where('statut_cycle', 'en_cours')
+            ->whereIn('statut_cycle', [
+                'gestation_en_cours',
+                'mise_bas_effectuee',
+                'en_lactation',
+            ])
             ->exists();
     }
 
