@@ -5,6 +5,7 @@ namespace App\Filament\Resources\StockAliments\Tables;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class StockAlimentsTable
@@ -13,92 +14,109 @@ class StockAlimentsTable
     {
         return $table
             ->columns([
-                TextColumn::make('aliment.nom')
+                TextColumn::make('nom')
                     ->label('Aliment')
                     ->searchable()
                     ->sortable()
-                    ->weight('bold'),
+                    ->weight('bold')
+                    ->description(fn ($record) => $record->description),
 
-                TextColumn::make('type_stock')
-                    ->label('Zone')
-                    ->badge()
-                    ->color(fn (string $state): string => $state === 'entrepot' ? 'primary' : 'info')
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'entrepot' => 'Entrepôt',
-                        'preparation' => 'Préparation',
-                        default => $state,
-                    })
-                    ->sortable(),
-
-                TextColumn::make('nombre_sacs_disponibles')
-                    ->label('Sacs')
-                    ->suffix(' sacs')
-                    ->numeric(decimalPlaces: 2)
-                    ->sortable(),
-
-                TextColumn::make('poids_kg_disponible')
-                    ->label('Poids')
+                TextColumn::make('stockEntrepot.poids_kg_disponible')
+                    ->label('Stock entrepôt')
                     ->suffix(' kg')
                     ->numeric(decimalPlaces: 2)
                     ->sortable()
+                    ->placeholder('0.00 kg')
                     ->color(function ($record) {
-                        if ($record->type_stock === 'entrepot' && $record->aliment) {
-                            return $record->poids_kg_disponible < $record->aliment->seuil_alerte ? 'danger' : 'success';
-                        }
+                        $stock = $record->stockEntrepot?->poids_kg_disponible ?? 0;
 
-                        return 'primary';
+                        return $stock < $record->seuil_alerte ? 'danger' : 'success';
                     })
                     ->weight(function ($record) {
-                        if ($record->type_stock === 'entrepot' && $record->aliment) {
-                            return $record->poids_kg_disponible < $record->aliment->seuil_alerte ? 'bold' : 'regular';
-                        }
+                        $stock = $record->stockEntrepot?->poids_kg_disponible ?? 0;
 
-                        return 'regular';
+                        return $stock < $record->seuil_alerte ? 'bold' : 'regular';
+                    })
+                    ->description(function ($record) {
+                        $valeur = $record->stockEntrepot?->valeur_stock ?? 0;
+
+                        return number_format($valeur, 0, ',', ' ').' FCFA';
                     }),
 
-                TextColumn::make('cout_moyen_kg')
+                TextColumn::make('stockPreparation.poids_kg_disponible')
+                    ->label('Stock préparation')
+                    ->suffix(' kg')
+                    ->numeric(decimalPlaces: 2)
+                    ->sortable()
+                    ->placeholder('0.00 kg')
+                    ->color('primary')
+                    ->description(function ($record) {
+                        $valeur = $record->stockPreparation?->valeur_stock ?? 0;
+
+                        return number_format($valeur, 0, ',', ' ').' FCFA';
+                    }),
+
+                TextColumn::make('stock_total')
+                    ->label('Stock total')
+                    ->suffix(' kg')
+                    ->numeric(decimalPlaces: 2)
+                    ->sortable(query: function ($query, $direction) {
+                        return $query->withSum('stocks as stock_total', 'poids_kg_disponible')
+                            ->orderBy('stock_total', $direction);
+                    })
+                    ->state(function ($record) {
+                        $entrepot = $record->stockEntrepot?->poids_kg_disponible ?? 0;
+                        $preparation = $record->stockPreparation?->poids_kg_disponible ?? 0;
+
+                        return $entrepot + $preparation;
+                    })
+                    ->weight('bold')
+                    ->description(function ($record) {
+                        $valeurEntrepot = $record->stockEntrepot?->valeur_stock ?? 0;
+                        $valeurPreparation = $record->stockPreparation?->valeur_stock ?? 0;
+                        $valeurTotale = $valeurEntrepot + $valeurPreparation;
+
+                        return number_format($valeurTotale, 0, ',', ' ').' FCFA';
+                    }),
+
+                TextColumn::make('seuil_alerte')
+                    ->label('Seuil alerte')
+                    ->suffix(' kg')
+                    ->numeric(decimalPlaces: 2)
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('stockEntrepot.cout_moyen_kg')
                     ->label('Coût moyen/kg')
                     ->suffix(' FCFA')
                     ->numeric(decimalPlaces: 2)
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                TextColumn::make('valeur_stock')
-                    ->label('Valeur stock')
-                    ->suffix(' FCFA')
-                    ->numeric(decimalPlaces: 0)
-                    ->sortable(),
-
-                TextColumn::make('derniere_maj')
-                    ->label('Dernière MAJ')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
                     ->placeholder('-')
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                TextColumn::make('updated_at')
-                    ->label('Modifié le')
-                    ->dateTime('d/m/Y H:i')
-                    ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('type_stock')
-                    ->label('Zone de stock')
-                    ->options([
-                        'entrepot' => 'Entrepôt',
-                        'preparation' => 'Préparation',
-                    ]),
+                TernaryFilter::make('alerte_stock')
+                    ->label('État du stock')
+                    ->placeholder('Tous les aliments')
+                    ->trueLabel('Stock en alerte')
+                    ->falseLabel('Stock suffisant')
+                    ->queries(
+                        true: fn ($query) => $query->whereHas('stockEntrepot', function ($q) {
+                            $q->whereRaw('poids_kg_disponible < (SELECT seuil_alerte FROM aliments WHERE aliments.id = stock_aliments.aliment_id)');
+                        }),
+                        false: fn ($query) => $query->whereHas('stockEntrepot', function ($q) {
+                            $q->whereRaw('poids_kg_disponible >= (SELECT seuil_alerte FROM aliments WHERE aliments.id = stock_aliments.aliment_id)');
+                        }),
+                    ),
 
-                SelectFilter::make('aliment_id')
-                    ->label('Aliment')
-                    ->relationship('aliment', 'nom')
-                    ->searchable()
-                    ->preload(),
+                SelectFilter::make('actif')
+                    ->label('Statut')
+                    ->options([
+                        1 => 'Actifs',
+                        0 => 'Inactifs',
+                    ]),
             ])
             ->recordActions([
                 ViewAction::make(),
             ])
-            ->defaultSort('aliment.nom');
+            ->defaultSort('nom');
     }
 }

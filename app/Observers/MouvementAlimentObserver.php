@@ -18,8 +18,16 @@ class MouvementAlimentObserver
             $mouvementAliment->user_id = Auth::id();
         }
 
-        if ($mouvementAliment->type_mouvement === 'achat' && $mouvementAliment->cout_total && $mouvementAliment->poids_kg) {
-            $mouvementAliment->cout_unitaire_kg = $mouvementAliment->cout_total / $mouvementAliment->poids_kg;
+        if ($mouvementAliment->type_mouvement === 'achat') {
+            // Calculer cout_total si prix_unitaire_sac et nombre_sacs sont fournis
+            if (! $mouvementAliment->cout_total && $mouvementAliment->prix_unitaire_sac && $mouvementAliment->nombre_sacs) {
+                $mouvementAliment->cout_total = $mouvementAliment->prix_unitaire_sac * $mouvementAliment->nombre_sacs;
+            }
+
+            // Calculer cout_unitaire_kg depuis cout_total et poids_kg
+            if ($mouvementAliment->cout_total && $mouvementAliment->poids_kg) {
+                $mouvementAliment->cout_unitaire_kg = $mouvementAliment->cout_total / $mouvementAliment->poids_kg;
+            }
         }
 
         if (! $mouvementAliment->cout_unitaire_kg) {
@@ -42,7 +50,7 @@ class MouvementAlimentObserver
             }
         }
 
-        if ($mouvementAliment->poids_kg) {
+        if ($mouvementAliment->poids_kg && $mouvementAliment->cout_unitaire_kg) {
             $mouvementAliment->valeur_mouvement = $mouvementAliment->cout_unitaire_kg * $mouvementAliment->poids_kg;
         }
     }

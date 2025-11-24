@@ -12,72 +12,125 @@ class StockAlimentInfolist
     {
         return $schema
             ->components([
-                Section::make('Informations')
+                Section::make('Informations sur l\'aliment')
                     ->columns(2)
                     ->schema([
-                        TextEntry::make('aliment.nom')
-                            ->label('Aliment')
+                        TextEntry::make('nom')
+                            ->label('Nom de l\'aliment')
                             ->weight('bold')
                             ->size('lg'),
 
-                        TextEntry::make('type_stock')
-                            ->label('Zone de stock')
+                        TextEntry::make('actif')
+                            ->label('Statut')
                             ->badge()
-                            ->color(fn (string $state): string => $state === 'entrepot' ? 'primary' : 'info')
-                            ->formatStateUsing(fn (string $state): string => match ($state) {
-                                'entrepot' => 'Entrepôt',
-                                'preparation' => 'Préparation',
-                                default => $state,
-                            }),
+                            ->color(fn (bool $state): string => $state ? 'success' : 'danger')
+                            ->formatStateUsing(fn (bool $state): string => $state ? 'Actif' : 'Inactif'),
+
+                        TextEntry::make('description')
+                            ->label('Description')
+                            ->columnSpanFull()
+                            ->placeholder('Aucune description'),
+
+                        TextEntry::make('poids_sac_standard')
+                            ->label('Poids standard d\'un sac')
+                            ->suffix(' kg')
+                            ->numeric(decimalPlaces: 2),
+
+                        TextEntry::make('seuil_alerte')
+                            ->label('Seuil d\'alerte')
+                            ->suffix(' kg')
+                            ->numeric(decimalPlaces: 2),
                     ]),
 
-                Section::make('Quantités disponibles')
-                    ->columns(2)
+                Section::make('Stock entrepôt')
+                    ->description('Stock disponible dans l\'entrepôt principal')
+                    ->columns(3)
                     ->schema([
-                        TextEntry::make('nombre_sacs_disponibles')
-                            ->label('Nombre de sacs')
-                            ->suffix(' sacs')
-                            ->numeric(decimalPlaces: 2)
-                            ->size('lg')
-                            ->weight('bold'),
-
-                        TextEntry::make('poids_kg_disponible')
-                            ->label('Poids total')
+                        TextEntry::make('stockEntrepot.poids_kg_disponible')
+                            ->label('Poids disponible')
                             ->suffix(' kg')
                             ->numeric(decimalPlaces: 2)
                             ->size('lg')
                             ->weight('bold')
+                            ->placeholder('0.00 kg')
                             ->color(function ($record) {
-                                if ($record->type_stock === 'entrepot' && $record->aliment) {
-                                    return $record->poids_kg_disponible < $record->aliment->seuil_alerte ? 'danger' : 'success';
-                                }
+                                $stock = $record->stockEntrepot?->poids_kg_disponible ?? 0;
 
-                                return 'primary';
+                                return $stock < $record->seuil_alerte ? 'danger' : 'success';
                             }),
-                    ]),
 
-                Section::make('Valeur du stock')
-                    ->columns(2)
-                    ->schema([
-                        TextEntry::make('cout_moyen_kg')
+                        TextEntry::make('stockEntrepot.cout_moyen_kg')
                             ->label('Coût moyen par kg')
                             ->suffix(' FCFA/kg')
-                            ->numeric(decimalPlaces: 2),
+                            ->numeric(decimalPlaces: 2)
+                            ->placeholder('-'),
 
-                        TextEntry::make('valeur_stock')
-                            ->label('Valeur totale du stock')
+                        TextEntry::make('stockEntrepot.valeur_stock')
+                            ->label('Valeur du stock')
                             ->suffix(' FCFA')
                             ->numeric(decimalPlaces: 0)
                             ->size('lg')
-                            ->weight('bold'),
+                            ->weight('bold')
+                            ->placeholder('0 FCFA'),
                     ]),
 
-                Section::make('Dernière mise à jour')
+                Section::make('Stock préparation')
+                    ->description('Stock disponible en zone de préparation')
+                    ->columns(3)
                     ->schema([
-                        TextEntry::make('derniere_maj')
-                            ->label('Dernière modification')
-                            ->dateTime('d/m/Y H:i')
-                            ->placeholder('Jamais modifié'),
+                        TextEntry::make('stockPreparation.poids_kg_disponible')
+                            ->label('Poids disponible')
+                            ->suffix(' kg')
+                            ->numeric(decimalPlaces: 2)
+                            ->size('lg')
+                            ->weight('bold')
+                            ->placeholder('0.00 kg')
+                            ->color('primary'),
+
+                        TextEntry::make('stockPreparation.cout_moyen_kg')
+                            ->label('Coût moyen par kg')
+                            ->suffix(' FCFA/kg')
+                            ->numeric(decimalPlaces: 2)
+                            ->placeholder('-'),
+
+                        TextEntry::make('stockPreparation.valeur_stock')
+                            ->label('Valeur du stock')
+                            ->suffix(' FCFA')
+                            ->numeric(decimalPlaces: 0)
+                            ->size('lg')
+                            ->weight('bold')
+                            ->placeholder('0 FCFA'),
+                    ]),
+
+                Section::make('Totaux')
+                    ->columns(2)
+                    ->schema([
+                        TextEntry::make('stock_total_poids')
+                            ->label('Poids total (entrepôt + préparation)')
+                            ->suffix(' kg')
+                            ->numeric(decimalPlaces: 2)
+                            ->size('lg')
+                            ->weight('bold')
+                            ->state(function ($record) {
+                                $entrepot = $record->stockEntrepot?->poids_kg_disponible ?? 0;
+                                $preparation = $record->stockPreparation?->poids_kg_disponible ?? 0;
+
+                                return $entrepot + $preparation;
+                            }),
+
+                        TextEntry::make('valeur_totale')
+                            ->label('Valeur totale')
+                            ->suffix(' FCFA')
+                            ->numeric(decimalPlaces: 0)
+                            ->size('lg')
+                            ->weight('bold')
+                            ->color('success')
+                            ->state(function ($record) {
+                                $valeurEntrepot = $record->stockEntrepot?->valeur_stock ?? 0;
+                                $valeurPreparation = $record->stockPreparation?->valeur_stock ?? 0;
+
+                                return $valeurEntrepot + $valeurPreparation;
+                            }),
                     ]),
             ]);
     }

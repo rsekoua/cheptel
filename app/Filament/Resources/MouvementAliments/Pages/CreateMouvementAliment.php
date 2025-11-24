@@ -13,4 +13,13 @@ class CreateMouvementAliment extends CreateRecord
     {
         return $this->getResource()::getUrl('index');
     }
+
+    protected function mutateFormDataBeforeCreate(array $data): array
+    {
+        // Supprimer les champs calculés pour laisser l'observer les gérer
+        unset($data['cout_unitaire_kg']);
+        unset($data['valeur_mouvement']);
+
+        return $data;
+    }
 }

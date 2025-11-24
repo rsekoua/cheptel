@@ -3,6 +3,7 @@
 namespace App\Observers;
 
 use App\Models\DetailPreparation;
+use App\Models\StockAliment;
 
 class DetailPreparationObserver
 {
@@ -11,6 +12,7 @@ class DetailPreparationObserver
      */
     public function creating(DetailPreparation $detailPreparation): void
     {
+        $this->ensureCoutUnitaire($detailPreparation);
         $this->calculateValeur($detailPreparation);
     }
 
@@ -19,6 +21,7 @@ class DetailPreparationObserver
      */
     public function updating(DetailPreparation $detailPreparation): void
     {
+        $this->ensureCoutUnitaire($detailPreparation);
         $this->calculateValeur($detailPreparation);
     }
 
@@ -44,6 +47,24 @@ class DetailPreparationObserver
     public function deleted(DetailPreparation $detailPreparation): void
     {
         $this->updatePreparationTotals($detailPreparation);
+    }
+
+    /**
+     * Ensure cout_unitaire_kg is set from stock if not provided.
+     */
+    protected function ensureCoutUnitaire(DetailPreparation $detailPreparation): void
+    {
+        if (! $detailPreparation->cout_unitaire_kg && $detailPreparation->aliment_id) {
+            $stockPreparation = StockAliment::where('aliment_id', $detailPreparation->aliment_id)
+                ->where('type_stock', 'preparation')
+                ->first();
+
+            if ($stockPreparation && $stockPreparation->cout_moyen_kg > 0) {
+                $detailPreparation->cout_unitaire_kg = $stockPreparation->cout_moyen_kg;
+            } else {
+                $detailPreparation->cout_unitaire_kg = 0;
+            }
+        }
     }
 
     /**

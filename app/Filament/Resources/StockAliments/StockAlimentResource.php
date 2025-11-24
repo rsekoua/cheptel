@@ -6,7 +6,7 @@ use App\Filament\Resources\StockAliments\Pages\ListStockAliments;
 use App\Filament\Resources\StockAliments\Pages\ViewStockAliment;
 use App\Filament\Resources\StockAliments\Schemas\StockAlimentInfolist;
 use App\Filament\Resources\StockAliments\Tables\StockAlimentsTable;
-use App\Models\StockAliment;
+use App\Models\Aliment;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -15,7 +15,7 @@ use Filament\Tables\Table;
 
 class StockAlimentResource extends Resource
 {
-    protected static ?string $model = StockAliment::class;
+    protected static ?string $model = Aliment::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCubeTransparent;
 
@@ -61,7 +61,7 @@ class StockAlimentResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\MouvementsRelationManager::class,
         ];
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\PreparationAliments\Schemas;
 
+use App\Models\Aliment;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -9,6 +10,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Icon;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 
@@ -60,16 +62,37 @@ class PreparationAlimentForm
                         Repeater::make('details')
                             ->relationship('details')
                             ->label('Aliments')
-                            ->columns(3)
+                            ->columns(2)
                             ->schema([
                                 Select::make('aliment_id')
                                     ->label('Aliment')
                                     ->required()
-                                    ->relationship('aliment', 'nom')
+                                    ->relationship(
+                                        name: 'aliment',
+                                        titleAttribute: 'nom',
+                                        modifyQueryUsing: fn ($query) => $query
+                                            ->whereHas('stockPreparation', function ($q) {
+                                                $q->where('poids_kg_disponible', '>', 0);
+                                            })
+                                            ->where('actif', true)
+                                            ->orderBy('nom')
+                                    )
                                     ->searchable()
                                     ->preload()
                                     ->native(false)
-                                    ->columnSpan(1),
+                                    ->columnSpan(1)
+                                    ->getOptionLabelFromRecordUsing(function ($record) {
+                                        $stockPreparation = $record->stockPreparation;
+                                        $poidsDisponible = $stockPreparation?->poids_kg_disponible ?? 0;
+                                        $coutMoyen = $stockPreparation?->cout_moyen_kg ?? 0;
+
+                                        return "{$record->nom} ({$poidsDisponible} kg @ ".number_format($coutMoyen, 0, ',', ' ').' FCFA/kg)';
+                                    })
+                                    ->afterLabel(Schema::start([
+                                        Icon::make(Heroicon::InformationCircle)
+                                            ->tooltip('Seuls les aliments présents dans le stock de préparation sont disponibles. Le coût sera automatiquement calculé selon le coût moyen du stock.')
+                                            ->color('info'),
+                                    ])),
 
                                 TextInput::make('quantite_kg')
                                     ->label('Quantité')
@@ -77,16 +100,36 @@ class PreparationAlimentForm
                                     ->numeric()
                                     ->suffix('kg')
                                     ->minValue(0.01)
-                                    ->columnSpan(1),
-
-                                TextInput::make('cout_unitaire_kg')
-                                    ->label('Coût/kg')
-                                    ->required()
-                                    ->numeric()
-                                    ->suffix('FCFA')
-                                    ->minValue(0)
                                     ->columnSpan(1)
-                                    ->helperText('Coût unitaire au moment de la sortie'),
+                                    ->live(onBlur: true)
+                                    ->helperText(function (Get $get) {
+                                        $alimentId = $get('aliment_id');
+                                        if (! $alimentId) {
+                                            return 'Sélectionnez d\'abord un aliment';
+                                        }
+
+                                        $aliment = Aliment::with('stockPreparation')->find($alimentId);
+                                        $stockDispo = $aliment?->stockPreparation?->poids_kg_disponible ?? 0;
+
+                                        return "Stock disponible : {$stockDispo} kg";
+                                    })
+                                    ->rules([
+                                        function (Get $get) {
+                                            return function (string $attribute, $value, $fail) use ($get) {
+                                                $alimentId = $get('aliment_id');
+                                                if (! $alimentId) {
+                                                    return;
+                                                }
+
+                                                $aliment = Aliment::with('stockPreparation')->find($alimentId);
+                                                $stockDispo = $aliment?->stockPreparation?->poids_kg_disponible ?? 0;
+
+                                                if ($value > $stockDispo) {
+                                                    $fail("La quantité demandée ({$value} kg) dépasse le stock disponible ({$stockDispo} kg).");
+                                                }
+                                            };
+                                        },
+                                    ]),
                             ])
                             ->addActionLabel('Ajouter un aliment')
                             ->defaultItems(1)
