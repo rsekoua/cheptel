@@ -21,7 +21,7 @@ return new class extends Migration
             $table->foreignId('animal_id')->nullable()->constrained('animaux')->cascadeOnDelete();
             $table->foreignId('lot_id')->nullable()->constrained('lots')->cascadeOnDelete();
             $table->foreignId('portee_id')->nullable()->constrained('portees')->cascadeOnDelete();
-            $table->foreignId('salle_id')->nullable()->constrained('salles')->cascadeOnDelete();
+//            $table->foreignId('salle_id')->nullable()->constrained('salles')->cascadeOnDelete();
             $table->date('date_echeance');
             $table->date('date_debut_periode')->nullable();
             $table->enum('statut', ['en_attente', 'en_cours', 'terminee', 'annulee'])->default('en_attente');
